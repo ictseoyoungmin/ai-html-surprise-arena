@@ -23,6 +23,24 @@
             transform: translateY(-12px) scale(1.02);
             box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
         }
+
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            pointer-events: none;
+            background: #000;
+        }
+
+        .preview-scrim {
+            background:
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 34%, transparent 56%, rgba(0, 0, 0, 0.88)),
+                radial-gradient(circle at 50% 45%, transparent, rgba(0, 0, 0, 0.28));
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
         
         .demo-modal {
             animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -68,7 +86,7 @@
             <div class="flex flex-wrap justify-center gap-4 text-sm">
                 <div class="bg-white/5 px-5 py-2.5 rounded-2xl flex items-center gap-2">
                     <i class="fa-solid fa-bolt text-yellow-400"></i>
-                    <span>12개 데모</span>
+                    <span id="demo-count">데모 로딩 중</span>
                 </div>
                 <div class="bg-white/5 px-5 py-2.5 rounded-2xl flex items-center gap-2">
                     <i class="fa-solid fa-file-code text-blue-400"></i>
@@ -100,58 +118,72 @@
                 <p class="text-zinc-400 mt-3">클릭해서 풀스크린으로 체험하세요</p>
             </div>
             
-            <div class="flex gap-3">
-                <button onclick="filterModels('all')" 
+            <div class="flex flex-wrap justify-end gap-3">
+                <button data-filter="all" 
                         class="active-filter px-6 py-3 rounded-2xl text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors" id="filter-all">
                     ALL
                 </button>
-                <button onclick="filterModels('grok')" 
-                        class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-grok">
-                    GROK
-                </button>
-                <button onclick="filterModels('chatgpt')" 
-                        class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-chatgpt">
-                    CHATGPT
-                </button>
-                <button onclick="filterModels('claude')" 
+                <button data-filter="claude" 
                         class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-claude">
                     CLAUDE
                 </button>
-                <button onclick="filterModels('gemini')" 
+                <button data-filter="chatgpt" 
+                        class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-chatgpt">
+                    CHATGPT
+                </button>
+                <button data-filter="grok" 
+                        class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-grok">
+                    GROK
+                </button>
+                <button data-filter="gemini" 
                         class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-gemini">
                     GEMINI
+                </button>
+                <button data-filter="mai" 
+                        class="px-6 py-3 rounded-2xl text-sm font-medium hover:bg-white/10 transition-colors" id="filter-mai">
+                    MAI
                 </button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="demo-grid">
-            <!-- Cards will be injected by JS -->
+            <div class="col-span-full text-zinc-500 font-mono">Loading evaluation data...</div>
         </div>
     </section>
 
     <!-- Modal -->
-    <div id="modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-        <div class="demo-modal bg-zinc-900 rounded-3xl w-full max-w-6xl max-h-[95vh] flex flex-col overflow-hidden border border-white/10">
+    <div id="modal" class="hidden fixed inset-0 bg-black z-50">
+        <div id="modal-shell" class="demo-modal bg-black w-screen h-screen overflow-hidden">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-white/10">
-                <div class="flex items-center gap-4">
+            <div class="absolute left-0 right-0 top-0 z-10 flex items-center justify-between gap-4 p-4 md:p-5 bg-gradient-to-b from-black/85 to-transparent">
+                <div class="flex min-w-0 items-center gap-4 rounded-2xl bg-black/55 px-4 py-3 backdrop-blur-md ring-1 ring-white/10">
                     <div id="modal-model" class="font-mono text-sm"></div>
-                    <div id="modal-title" class="text-xl font-semibold"></div>
+                    <div id="modal-title" class="truncate text-lg md:text-xl font-semibold"></div>
                 </div>
-                <button onclick="closeModal()" 
-                        class="text-zinc-400 hover:text-white p-2">
-                    <i class="fa-solid fa-xmark text-2xl"></i>
-                </button>
+                <div class="flex items-center gap-2 rounded-2xl bg-black/55 p-2 backdrop-blur-md ring-1 ring-white/10">
+                    <button onclick="enterFullscreen()" 
+                            class="h-10 w-10 text-zinc-300 hover:text-white" title="브라우저 전체화면">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                    <a id="modal-open-tab" href="#" target="_blank" 
+                       class="grid h-10 w-10 place-items-center text-zinc-300 hover:text-white" title="새 탭에서 열기">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    <button onclick="closeModal()" 
+                            class="h-10 w-10 text-zinc-300 hover:text-white" title="닫기">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+                </div>
             </div>
             
             <!-- Iframe -->
-            <div class="flex-1 bg-black relative" id="modal-content">
-                <iframe id="demo-iframe" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+            <div class="absolute inset-0 bg-black" id="modal-content">
+                <iframe id="demo-iframe" class="h-full w-full" frameborder="0" allowfullscreen></iframe>
             </div>
             
-            <div class="p-6 text-xs text-zinc-500 font-mono flex justify-between items-center border-t border-white/10">
-                <div id="modal-desc"></div>
-                <a id="modal-source" href="#" target="_blank" class="hover:text-white flex items-center gap-2">
+            <div class="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-t from-black/85 to-transparent p-4 text-xs text-zinc-400 font-mono">
+                <div id="modal-desc" class="min-w-0 truncate rounded-2xl bg-black/55 px-4 py-3 backdrop-blur-md ring-1 ring-white/10"></div>
+                <a id="modal-source" href="#" target="_blank" class="flex shrink-0 items-center gap-2 rounded-2xl bg-black/55 px-4 py-3 backdrop-blur-md ring-1 ring-white/10 hover:text-white">
                     <i class="fa-solid fa-code"></i>
                     <span>소스 보기</span>
                 </a>
@@ -168,116 +200,65 @@
                     <i class="fa-brands fa-github"></i> GitHub Repo
                 </a>
                 <span>·</span>
-                <span>프롬프트: "현재 버전의 너가 만들 수 있는 가장 간결하면서 사람들을 놀라게 할 자유 주제 html 웹페이지 하나 만들 수 있나"</span>
+                <span id="prompt-copy">프롬프트 로딩 중</span>
             </div>
         </div>
     </footer>
 
     <script>
-        const demos = [
-            {
-                title: "GROK 4 • 우주 폭발",
-                model: "Grok",
-                file: "grock4_3-fast-surprise.html",
-                desc: "5000개 실시간 입자 + 마우스 물리 + 우주 폭발",
-                tags: ["particles", "physics", "cosmic"],
-                color: "blue"
-            },
-            {
-                title: "Gravity Ink",
-                model: "ChatGPT 5 Pro",
-                file: "chat-gpt5-pro-gravity_ink.html",
-                desc: "텍스트 → 살아있는 입자장 • 드래그 블랙홀",
-                tags: ["ink", "gravity", "text"],
-                color: "emerald"
-            },
-            {
-                title: "Singularity of Words",
-                model: "ChatGPT 5.4",
-                file: "chatgpt-54-singularity_of_words.html",
-                desc: "단어가 우주처럼 휘어지는 실시간 필드",
-                tags: ["singularity", "words"],
-                color: "purple"
-            },
-            {
-                title: "Cursor Gravity Storm",
-                model: "ChatGPT 5.5",
-                file: "chatgpt5.5-max-hight-cursor-gravity.html",
-                desc: "마우스 움직임 = bend • hold = storm",
-                tags: ["cursor", "gravity"],
-                color: "amber"
-            },
-            {
-                title: "GYROID Endless Flight",
-                model: "Claude Opus 4.8",
-                file: "claude-opus-48-hight-gyroid_flight.html",
-                desc: "실시간 Raymarching • 무한 기하학 비행",
-                tags: ["webgl", "raymarching", "gyroid"],
-                color: "violet"
-            },
-            {
-                title: "Entropy of Thought",
-                model: "Claude Sonnet 4.6",
-                file: "claude-sonnet-46-hight-entropy_of_thought.html",
-                desc: "생각의 엔트로피 • 입자에서 의미가 태어난다",
-                tags: ["entropy", "thought"],
-                color: "rose"
-            },
-            {
-                title: "Claude Consciousness",
-                model: "Claude Sonnet 4.6",
-                file: "claude_sonnet_46_showcase.html",
-                desc: "의식 • 창의성 • 코드",
-                tags: ["consciousness"],
-                color: "sky"
-            },
-            {
-                title: "Infinite Corridor",
-                model: "Claude Fable 5",
-                file: "cluade-fable5-infinite-corridor.html",
-                desc: "프랙탈 무한 회랑 • 순수 Raymarching",
-                tags: ["corridor", "fractal"],
-                color: "indigo"
-            },
-            {
-                title: "AI Benchmark Dashboard",
-                model: "Codex 5.3",
-                file: "codex-53-spark-surprise-benchmark.html",
-                desc: "입력하면 AI 버전별 점수 즉석 계산",
-                tags: ["benchmark", "dashboard"],
-                color: "lime"
-            },
-            {
-                title: "Gemini 3.5 Performance",
-                model: "Gemini 3.5",
-                file: "gemini3_5-gemini-code-1781159523354.html",
-                desc: "3D 그래프로 Gemini 버전 비교",
-                tags: ["3d", "graph"],
-                color: "cyan"
-            },
-            {
-                title: "Tiny Universe",
-                model: "MAI-Code 1 Flash",
-                file: "MAI-Code-1-Flash-index.html",
-                desc: "작지만 아름다운 우주",
-                tags: ["tiny", "universe"],
-                color: "fuchsia"
-            }
-        ];
+        let demos = [];
+        let activeFilter = 'all';
+
+        const familyStyles = {
+            claude: { text: 'text-violet-300', ring: 'ring-violet-400/30', icon: '◼' },
+            chatgpt: { text: 'text-emerald-300', ring: 'ring-emerald-400/30', icon: '✦' },
+            grok: { text: 'text-blue-300', ring: 'ring-blue-400/30', icon: '✹' },
+            gemini: { text: 'text-cyan-300', ring: 'ring-cyan-400/30', icon: '∞' },
+            mai: { text: 'text-fuchsia-300', ring: 'ring-fuchsia-400/30', icon: '◉' }
+        };
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
 
         function createCard(demo) {
+            const style = familyStyles[demo.family] || familyStyles.chatgpt;
             const card = document.createElement('div');
-            card.className = `card group bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden cursor-pointer`;
+            card.className = 'card group bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden cursor-pointer';
             card.innerHTML = `
-                <div class="h-64 bg-gradient-to-br from-zinc-800 to-black relative flex items-center justify-center overflow-hidden" style="background: linear-gradient(135deg, #18181b, #27272a);">
-                    <div class="text-6xl opacity-20 group-hover:opacity-40 transition-opacity">${demo.tags[0] === 'particles' ? '🌌' : demo.tags[0] === 'webgl' ? '◼️' : '✦'}</div>
-                    <div class="absolute top-4 right-4 bg-black/70 text-[10px] px-3 py-1 rounded-full font-mono tracking-widest">${demo.model}</div>
+                <div class="aspect-video bg-black relative overflow-hidden">
+                    <iframe class="preview-frame" src="${escapeHtml(demo.path)}" title="${escapeHtml(demo.title)} preview" loading="lazy" tabindex="-1"></iframe>
+                    <div class="preview-scrim absolute inset-0"></div>
+                    <div class="absolute left-4 top-4 bg-white text-black text-xs px-3 py-1 rounded-full font-bold">#${demo.rank}</div>
+                    <div class="absolute right-4 top-4 bg-black/75 text-[10px] px-3 py-1 rounded-full font-mono tracking-widest ${style.text}">${escapeHtml(demo.model)}</div>
+                    <div class="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
+                        <div>
+                            <div class="text-[10px] text-zinc-400 font-mono tracking-widest">PREVIEW</div>
+                            <div class="text-2xl opacity-80">${style.icon}</div>
+                        </div>
+                        <div class="grid w-40 grid-cols-2 gap-2">
+                            <div class="bg-black/65 backdrop-blur px-3 py-2 rounded-2xl ring-1 ${style.ring}">
+                                <div class="text-[9px] text-zinc-500 font-mono">QUANT</div>
+                                <div class="text-lg font-bold">${demo.quantitativeScore}</div>
+                            </div>
+                            <div class="bg-black/65 backdrop-blur px-3 py-2 rounded-2xl ring-1 ${style.ring}">
+                                <div class="text-[9px] text-zinc-500 font-mono">HUMAN</div>
+                                <div class="text-lg font-bold">${demo.subjectiveScore}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="p-6">
-                    <div class="font-semibold text-xl mb-2 title-font">${demo.title}</div>
-                    <p class="text-zinc-400 text-sm line-clamp-2 mb-6">${demo.desc}</p>
+                    <div class="font-semibold text-xl mb-2 title-font">${escapeHtml(demo.title)}</div>
+                    <p class="text-zinc-400 text-sm line-clamp-2 mb-4">${escapeHtml(demo.summary)}</p>
+                    <p class="text-zinc-500 text-xs mb-6">${escapeHtml(demo.topic)} · ${demo.lines} lines</p>
                     <div class="flex flex-wrap gap-2">
-                        ${demo.tags.map(tag => `<span class="text-[10px] px-3 py-1 bg-white/5 rounded-full">${tag}</span>`).join('')}
+                        ${demo.tech.map(tag => `<span class="text-[10px] px-3 py-1 bg-white/5 rounded-full">${escapeHtml(tag)}</span>`).join('')}
                     </div>
                 </div>
             `;
@@ -288,6 +269,10 @@
         function renderDemos(filteredDemos) {
             const grid = document.getElementById('demo-grid');
             grid.innerHTML = '';
+            if (!filteredDemos.length) {
+                grid.innerHTML = '<div class="col-span-full text-zinc-500 font-mono">No demos found.</div>';
+                return;
+            }
             filteredDemos.forEach(demo => {
                 grid.appendChild(createCard(demo));
             });
@@ -295,26 +280,46 @@
 
         function openDemo(demo) {
             const modal = document.getElementById('modal');
-            document.getElementById('modal-model').innerHTML = `<span class="text-${demo.color}-400">${demo.model}</span>`;
+            const style = familyStyles[demo.family] || familyStyles.chatgpt;
+            document.getElementById('modal-model').innerHTML = `<span class="${style.text}">#${demo.rank} ${escapeHtml(demo.model)}</span>`;
             document.getElementById('modal-title').textContent = demo.title;
-            document.getElementById('modal-desc').textContent = demo.desc;
+            document.getElementById('modal-desc').textContent = `${demo.summary} · 정량 ${demo.quantitativeScore}/100 · 주관 ${demo.subjectiveScore}/10`;
             
             const iframe = document.getElementById('demo-iframe');
-            iframe.src = `demos/${demo.file}`;
+            iframe.src = demo.path;
+
+            const source = document.getElementById('modal-source');
+            source.href = demo.path;
+
+            const openTab = document.getElementById('modal-open-tab');
+            openTab.href = demo.path;
             
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            document.body.classList.add('modal-open');
         }
 
         function closeModal() {
             const modal = document.getElementById('modal');
             const iframe = document.getElementById('demo-iframe');
             iframe.src = '';
+            document.getElementById('modal-source').href = '#';
+            document.getElementById('modal-open-tab').href = '#';
             modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            document.body.classList.remove('modal-open');
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+
+        function enterFullscreen() {
+            const shell = document.getElementById('modal-shell');
+            if (shell.requestFullscreen) {
+                shell.requestFullscreen();
+            }
         }
 
         function filterModels(model) {
+            activeFilter = model;
             document.querySelectorAll('[id^="filter-"]').forEach(btn => {
                 btn.classList.remove('active-filter', 'bg-white/10');
             });
@@ -324,25 +329,43 @@
                 renderDemos(demos);
             } else {
                 document.getElementById(`filter-${model}`).classList.add('active-filter', 'bg-white/10');
-                const filtered = demos.filter(d => {
-                    if (model === 'grok') return d.model.toLowerCase().includes('grok');
-                    if (model === 'chatgpt') return d.model.toLowerCase().includes('chatgpt') || d.model.toLowerCase().includes('codex');
-                    if (model === 'claude') return d.model.toLowerCase().includes('claude');
-                    if (model === 'gemini') return d.model.toLowerCase().includes('gemini');
-                    return true;
-                });
+                const filtered = demos.filter(d => d.family === model);
                 renderDemos(filtered);
             }
         }
 
-        // Tailwind script
-        function initTailwind() {
-            // Already using CDN
+        async function loadEvaluationData() {
+            const response = await fetch('data/demos.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load data/demos.json: ${response.status}`);
+            }
+
+            const data = await response.json();
+            demos = [...data.demos].sort((a, b) => a.rank - b.rank);
+            document.title = data.meta.title;
+            document.getElementById('demo-count').textContent = `${demos.length}개 데모`;
+            document.getElementById('prompt-copy').textContent = `프롬프트: "${data.meta.prompt}"`;
+            filterModels(activeFilter);
+        }
+
+        function showLoadError(error) {
+            const grid = document.getElementById('demo-grid');
+            grid.innerHTML = `
+                <div class="col-span-full border border-red-400/30 bg-red-950/20 rounded-3xl p-8">
+                    <div class="text-red-300 font-semibold mb-2">평가 데이터를 불러오지 못했습니다.</div>
+                    <p class="text-zinc-400 text-sm">로컬 파일을 직접 열었다면 브라우저 보안 정책 때문에 JSON 로드가 막힐 수 있습니다. 로컬 서버에서 열어 주세요.</p>
+                    <p class="text-zinc-600 text-xs font-mono mt-4">${escapeHtml(error.message)}</p>
+                </div>
+            `;
         }
 
         // Initialize
         window.onload = () => {
-            renderDemos(demos);
+            loadEvaluationData().catch(showLoadError);
+
+            document.querySelectorAll('[data-filter]').forEach(btn => {
+                btn.addEventListener('click', () => filterModels(btn.dataset.filter));
+            });
             
             // Close modal on ESC
             document.addEventListener('keydown', (e) => {
