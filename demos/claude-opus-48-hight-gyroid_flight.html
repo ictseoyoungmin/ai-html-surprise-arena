@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GYROID · 무한 비행</title>
+<style>
+  :root{ --ink:#eae6ff; --dim:#8b86b8; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; background:#05030c; overflow:hidden; }
+  canvas{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+
+  /* 오버레이 타이포 */
+  .ui{ position:fixed; inset:0; pointer-events:none;
+       font-family:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+       color:var(--ink); mix-blend-mode:screen; }
+  .title{ position:absolute; left:clamp(20px,4vw,56px); top:clamp(20px,4vw,52px);
+          line-height:.92; letter-spacing:-.04em; }
+  .title b{ display:block; font-size:clamp(34px,8vw,76px); font-weight:800;
+            text-shadow:0 0 30px rgba(150,120,255,.55); }
+  .title span{ display:block; margin-top:.5em; font-size:clamp(10px,1.5vw,13px);
+               font-weight:500; letter-spacing:.34em; color:var(--dim); }
+  .hint{ position:absolute; left:clamp(20px,4vw,56px); bottom:clamp(20px,4vw,44px);
+         font-size:clamp(10px,1.5vw,12px); letter-spacing:.18em; color:var(--dim);
+         transition:opacity 1.2s ease; }
+  .hint.gone{ opacity:0; }
+  .err{ position:fixed; inset:0; display:none; place-items:center; padding:8vw; text-align:center;
+        font-family:ui-monospace,monospace; color:#ff8aa0; background:#05030c; line-height:1.7; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="ui" aria-hidden="true">
+  <div class="title"><b>GYROID</b><span>ENDLESS&nbsp;&nbsp;RAYMARCHED&nbsp;&nbsp;FLIGHT</span></div>
+  <div class="hint" id="hint">움직여 보세요 — 마우스 / 터치로 시점 이동</div>
+</div>
+
+<div class="err" id="err">이 기기/브라우저에서 WebGL을 사용할 수 없습니다.<br>다른 브라우저에서 열어 주세요.</div>
+
+<script>
+const cv = document.getElementById('c');
+const gl = cv.getContext('webgl', { antialias:false, alpha:false, powerPreference:'high-performance' });
+if (!gl){ document.getElementById('err').style.display='grid'; throw 0; }
+
+/* ---- 풀스크린 사각형 (정점 셰이더는 단순 통과) ---- */
+const VERT = `
+attribute vec2 p;
+void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
+
+/* ---- 핵심: 자이로이드 거리장을 레이마칭하며 발광량을 적분 ---- */
+const FRAG = `
+precision highp float;
+uniform vec2  R;     // 해상도(px)
+uniform float T;     // 시간(s)
+uniform vec2  M;     // 마우스 (-1..1)
+
+mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
+
+// IQ 코사인 팔레트 — 무지갯빛 색조
+vec3 pal(float t){
+  return 0.5 + 0.5*cos(6.28318*(vec3(1.0,0.85,0.65)*t + vec3(0.10,0.42,0.74)));
+}
+
+// 자이로이드 쉘: 부호 있는 거리장. z에 따라 비틀어 터널처럼 만든다.
+float map(vec3 p){
+  p.xy *= rot(p.z*0.16 + T*0.10);
+  float s = 1.7;
+  vec3 q = p*s;
+  float g = dot(sin(q), cos(q.yzx)); // 자이로이드 최소곡면
+  return abs(g)/s - 0.045;           // 얇은 쉘 두께
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy*2.0 - R) / R.y;
+
+  // 카메라: 끝없이 전진 + 부드러운 표류
+  vec3 ro = vec3(sin(T*0.25)*0.4, cos(T*0.21)*0.4, T*1.6);
+  vec3 rd = normalize(vec3(uv, 1.25));
+  rd.yz *= rot(M.y*0.7 - 0.05);  // 마우스 상하
+  rd.xz *= rot(M.x*0.7);         // 마우스 좌우
+
+  float t = 0.0, glow = 0.0;
+  vec3  col = vec3(0.0);
+  for (int i=0; i<96; i++){
+    vec3 p = ro + rd*t;
+    float d = map(p);
+    // 표면에 가까울수록 강하게 빛나는 발광 적분(볼류메트릭 광택)
+    glow += 0.013 / (0.008 + abs(d));
+    col  += pal(t*0.045 + T*0.04) * (0.0009 / (0.008 + abs(d)));
+    if (d < 0.0009 || t > 26.0) break;
+    t += max(d*0.72, 0.006);
+  }
+
+  col *= 0.85;
+  col += pal(T*0.03) * glow * 0.0009;  // 색조가 입혀진 헤이즈
+  col  = 1.0 - exp(-col*1.35);          // 톤 매핑
+  col  = pow(col, vec3(0.92));          // 감마
+  float vig = smoothstep(1.5, 0.2, length(uv)); // 비네팅
+  gl_FragColor = vec4(col*vig, 1.0);
+}`;
+
+function compile(type, src){
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src); gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+    console.error(gl.getShaderInfoLog(sh)); throw new Error('shader');
+  }
+  return sh;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+gl.linkProgram(prog); gl.useProgram(prog);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const uR = gl.getUniformLocation(prog,'R');
+const uT = gl.getUniformLocation(prog,'T');
+const uM = gl.getUniformLocation(prog,'M');
+
+/* ---- 해상도 / 입력 ---- */
+let DPR = Math.min(window.devicePixelRatio||1, 1.5);
+function resize(){
+  cv.width  = Math.floor(innerWidth  * DPR);
+  cv.height = Math.floor(innerHeight * DPR);
+  gl.viewport(0,0,cv.width,cv.height);
+}
+addEventListener('resize', resize); resize();
+
+let mx=0, my=0, tx=0, ty=0, moved=false;
+const hint = document.getElementById('hint');
+function aim(x,y){
+  tx = (x/innerWidth )*2-1;
+  ty = (y/innerHeight)*2-1;
+  if(!moved){ moved=true; hint.classList.add('gone'); }
+}
+addEventListener('pointermove', e=>aim(e.clientX,e.clientY), {passive:true});
+addEventListener('pointerdown', e=>aim(e.clientX,e.clientY), {passive:true});
+
+/* ---- 루프 ---- */
+const t0 = performance.now();
+function frame(now){
+  mx += (tx-mx)*0.06;  my += (ty-my)*0.06;  // 시점 관성
+  gl.uniform2f(uR, cv.width, cv.height);
+  gl.uniform1f(uT, (now - t0)/1000);
+  gl.uniform2f(uM, mx, my);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

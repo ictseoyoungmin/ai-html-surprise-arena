@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Singularity of Words</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --fg: rgba(255,255,255,.9);
+      --soft: rgba(255,255,255,.52);
+      --panel: rgba(255,255,255,.08);
+      --line: rgba(255,255,255,.12);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 45%, #1c1033 0%, #090611 28%, #04040a 58%, #000 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      color: var(--fg);
+    }
+    .chip {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      letter-spacing: .14em;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .chip b { font-weight: 800; }
+    .status {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      font-size: 11px;
+      color: var(--soft);
+      max-width: min(42vw, 420px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+    .center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: min(90vw, 900px);
+      mix-blend-mode: screen;
+    }
+    .title {
+      font-size: clamp(24px, 4vw, 54px);
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1;
+      margin: 0 0 12px;
+      text-shadow: 0 0 18px rgba(255,255,255,.08);
+    }
+    .desc {
+      margin: 0;
+      color: var(--soft);
+      font-size: clamp(12px, 1.4vw, 16px);
+      line-height: 1.6;
+      letter-spacing: .02em;
+    }
+    .footer {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 12px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      backdrop-filter: blur(18px);
+      color: var(--soft);
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.55;
+      width: min(92vw, 680px);
+      box-shadow: 0 10px 40px rgba(0,0,0,.28);
+    }
+    .footer b { color: var(--fg); }
+    #ghost {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    @media (max-width: 720px) {
+      .center { top: 46%; }
+      .title { margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <input id="ghost" type="text" autocomplete="off" spellcheck="false" />
+
+  <div class="hud">
+    <div class="chip"><b>Singularity</b> of Words</div>
+    <div class="status" id="status">CURRENT SIGNAL · GRAVITY</div>
+    <div class="center">
+      <h1 class="title">문자를 우주처럼 휘게 만든 한 페이지</h1>
+      <p class="desc">복잡한 설명 없이, 입력한 텍스트가 살아 있는 입자장으로 변합니다.</p>
+    </div>
+    <div class="footer">
+      아무 곳이나 클릭 후 <b>입력</b> · <b>마우스 이동</b>으로 휘기 · <b>클릭 유지</b>로 끌어당기기 · <b>Enter</b>로 초신성 · <b>Esc</b>로 초기화 · <b>휠</b>로 색 이동
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('scene');
+    const ctx = canvas.getContext('2d');
+    const ghost = document.getElementById('ghost');
+    const statusEl = document.getElementById('status');
+    const off = document.createElement('canvas');
+    const offCtx = off.getContext('2d', { willReadFrequently: true });
+
+    const TAU = Math.PI * 2;
+    let w = innerWidth, h = innerHeight, dpr = 1, hue = 265, last = 0;
+    let stars = [], particles = [];
+
+    const mouse = {
+      x: w / 2,
+      y: h / 2,
+      down: false,
+      seen: false,
+      radius: 150
+    };
+
+    function random(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function spawnParticle() {
+      const a = Math.random() * TAU;
+      const r = Math.min(w, h) * random(0.18, 0.48);
+      return {
+        x: w / 2 + Math.cos(a) * r,
+        y: h / 2 + Math.sin(a) * r,
+        px: w / 2,
+        py: h / 2,
+        tx: w / 2,
+        ty: h / 2,
+        vx: 0,
+        vy: 0,
+        size: random(0.7, 1.9),
+        seed: Math.random() * 9999
+      };
+    }
+
+    function initStars() {
+      const count = Math.max(90, Math.round((w * h) / 14000));
+      stars = Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        z: Math.random() * 1.4 + 0.2,
+        s: Math.random() * 1.6 + 0.3,
+        v: Math.random() * 0.25 + 0.05
+      }));
+    }
+
+    function fitCanvas() {
+      w = innerWidth;
+      h = innerHeight;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      off.width = w;
+      off.height = h;
+      initStars();
+      setText(ghost.value || 'GRAVITY', false);
+    }
+
+    function setText(value, burst = true) {
+      let text = (value || '').trim();
+      if (!text) text = 'GRAVITY';
+      text = [...text].slice(0, 20).join('');
+      ghost.value = text;
+      statusEl.textContent = 'CURRENT SIGNAL · ' + text;
+
+      offCtx.clearRect(0, 0, w, h);
+      offCtx.fillStyle = '#fff';
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+      offCtx.font = `900 ${Math.min(w, h) * 0.4}px system-ui, sans-serif`;
+
+      const maxWidth = w * 0.82;
+      let size = Math.min(w, h) * 0.42;
+      while (size > 42) {
+        offCtx.font = `900 ${size}px system-ui, sans-serif`;
+        if (offCtx.measureText(text).width <= maxWidth) break;
+        size -= 8;
+      }
+
+      offCtx.fillText(text, w / 2, h / 2 + size * 0.04);
+      const data = offCtx.getImageData(0, 0, w, h).data;
+      const step = Math.max(5, Math.min(9, Math.round(size / 32)));
+      let points = [];
+
+      for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+          if (data[(y * w + x) * 4 + 3] > 120) points.push({ x, y });
+        }
+      }
+
+      const maxPoints = Math.max(1200, Math.min(2600, Math.round((w * h) / 700)));
+      if (points.length > maxPoints) {
+        const reduced = [];
+        const jump = points.length / maxPoints;
+        for (let i = 0; i < maxPoints; i++) reduced.push(points[Math.floor(i * jump)]);
+        points = reduced;
+      }
+
+      while (particles.length < points.length) particles.push(spawnParticle());
+      particles.length = points.length;
+
+      for (let i = 0; i < points.length; i++) {
+        particles[i].tx = points[i].x;
+        particles[i].ty = points[i].y;
+      }
+
+      if (burst) explode(0.35);
+    }
+
+    function explode(power = 1) {
+      for (const p of particles) {
+        const a = Math.random() * TAU;
+        const s = random(3, 12) * power;
+        p.vx += Math.cos(a) * s;
+        p.vy += Math.sin(a) * s;
+      }
+      hue = (hue + 45) % 360;
+    }
+
+    function paintBackground(now) {
+      ctx.clearRect(0, 0, w, h);
+
+      const pulse = 0.5 + 0.5 * Math.sin(now * 0.0013);
+      const bg = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.7);
+      bg.addColorStop(0, `hsla(${hue}, 85%, 8%, 0.98)`);
+      bg.addColorStop(0.38, 'rgba(10,8,18,0.94)');
+      bg.addColorStop(1, 'rgba(0,0,0,1)');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const halo = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.min(w, h) * 0.48);
+      halo.addColorStop(0, `hsla(${(hue + 40) % 360}, 100%, 70%, ${0.09 + pulse * 0.07})`);
+      halo.addColorStop(0.45, `hsla(${(hue + 85) % 360}, 100%, 65%, 0.025)`);
+      halo.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawStars(dt) {
+      for (const s of stars) {
+        s.y += s.v * s.z * dt;
+        if (s.y > h + 3) {
+          s.y = -3;
+          s.x = Math.random() * w;
+        }
+        const px = s.x + (mouse.x - w / 2) * s.z * 0.012;
+        const py = s.y + (mouse.y - h / 2) * s.z * 0.012;
+        ctx.globalAlpha = 0.16 + s.z * 0.18;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(px, py, s.s * s.z, s.s * s.z);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawCursorField() {
+      if (!mouse.seen) return;
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.radius * 1.3);
+      glow.addColorStop(0, `hsla(${(hue + 70) % 360}, 100%, 74%, ${mouse.down ? 0.22 : 0.1})`);
+      glow.addColorStop(0.35, `hsla(${(hue + 20) % 360}, 100%, 64%, 0.05)`);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(mouse.x - mouse.radius * 1.3, mouse.y - mouse.radius * 1.3, mouse.radius * 2.6, mouse.radius * 2.6);
+    }
+
+    function step(now = 0) {
+      const dt = Math.min(2.2, Math.max(0.6, (now - last) / 16.666 || 1));
+      last = now;
+
+      paintBackground(now);
+      drawStars(dt);
+      drawCursorField();
+
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = `hsla(${(hue + 18) % 360}, 100%, 72%, 0.14)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+
+      for (const p of particles) {
+        p.px = p.x;
+        p.py = p.y;
+
+        const tx = p.tx - p.x;
+        const ty = p.ty - p.y;
+        p.vx += tx * 0.016 * dt;
+        p.vy += ty * 0.016 * dt;
+
+        if (mouse.seen) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 < mouse.radius * mouse.radius) {
+            const dist = Math.sqrt(dist2) || 1;
+            const falloff = 1 - dist / mouse.radius;
+            const radial = (mouse.down ? -1 : 1) * falloff * 4.8;
+            const spin = (mouse.down ? 1 : -1) * falloff * 1.8;
+            p.vx += (dx / dist) * radial * dt + (-dy / dist) * spin * dt;
+            p.vy += (dy / dist) * radial * dt + (dx / dist) * spin * dt;
+          }
+        }
+
+        p.vx += Math.cos(now * 0.00045 + p.seed) * 0.012;
+        p.vy += Math.sin(now * 0.0006 + p.seed * 1.7) * 0.012;
+        p.vx *= 0.9;
+        p.vy *= 0.9;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+
+        ctx.moveTo(p.px, p.py);
+        ctx.lineTo(p.x, p.y);
+      }
+
+      ctx.stroke();
+      ctx.fillStyle = `hsla(${hue}, 100%, 82%, 0.9)`;
+      ctx.beginPath();
+
+      for (const p of particles) {
+        ctx.moveTo(p.x + p.size, p.y);
+        ctx.arc(p.x, p.y, p.size, 0, TAU);
+      }
+
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      hue = (hue + 0.05 * dt) % 360;
+      requestAnimationFrame(step);
+    }
+
+    function reset() {
+      hue = 265;
+      setText('GRAVITY');
+      explode(0.8);
+    }
+
+    addEventListener('resize', fitCanvas);
+    addEventListener('pointermove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.seen = true;
+    });
+    addEventListener('pointerdown', e => {
+      mouse.down = true;
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.seen = true;
+      ghost.focus();
+    });
+    addEventListener('pointerup', () => mouse.down = false);
+    addEventListener('pointercancel', () => mouse.down = false);
+    addEventListener('wheel', e => {
+      hue = (hue + e.deltaY * 0.03 + 3600) % 360;
+      mouse.radius = Math.max(100, Math.min(220, mouse.radius + e.deltaY * 0.02));
+    }, { passive: true });
+
+    ghost.addEventListener('input', () => setText(ghost.value));
+    addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        explode(2.2);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        reset();
+      }
+    });
+
+    fitCanvas();
+    requestAnimationFrame(step);
+
+    setTimeout(() => {
+      ghost.value = 'GRAVITY';
+      setText('GRAVITY', false);
+    }, 0);
+  </script>
+</body>
+</html>

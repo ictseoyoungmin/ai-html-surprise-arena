@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Gravity Ink</title>
+<style>
+  *{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#03040a;color:white;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif}
+  body:before{content:"";position:fixed;inset:-20%;background:radial-gradient(circle at 20% 20%,#243b77 0,#0a1024 23%,transparent 47%),radial-gradient(circle at 80% 70%,#5d224d 0,#120916 25%,transparent 50%),#03040a;filter:saturate(1.2);animation:drift 14s linear infinite alternate}
+  @keyframes drift{to{transform:translate3d(-4%,3%,0) scale(1.05)}}
+  canvas{position:fixed;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
+  .ui{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 32px));display:grid;gap:10px;text-align:center;z-index:2;transition:.35s opacity}
+  .brand{letter-spacing:.38em;font-size:11px;color:#ffffff99;text-indent:.38em}
+  input{width:100%;border:1px solid #ffffff2b;border-radius:999px;background:#ffffff12;color:white;outline:0;text-align:center;padding:15px 20px;font-size:clamp(18px,3vw,30px);font-weight:800;backdrop-filter:blur(16px);box-shadow:0 20px 60px #0008}
+  input::placeholder{color:#ffffff55}.hint{font-size:12px;color:#ffffff8a}.hide{opacity:.18}
+  @media (max-width:640px){.hint{font-size:11px}.brand{font-size:10px}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="typed text becomes a living particle field"></canvas>
+<div class="ui" id="ui">
+  <div class="brand">GRAVITY INK</div>
+  <input id="word" maxlength="16" value="놀람" autocomplete="off" spellcheck="false" aria-label="입력한 글자가 입자 우주가 됩니다" />
+  <div class="hint">글자를 바꾸세요 · 드래그하면 블랙홀 · 놓으면 폭발 · Enter는 변신</div>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+  const input = document.getElementById('word'), ui = document.getElementById('ui');
+  const off = document.createElement('canvas'), ox = off.getContext('2d', {willReadFrequently:true});
+  const TAU = Math.PI * 2, presets = ['놀람','여기','숨','WOW','GPT','별','생각','2026','?'];
+  let W = 0, H = 0, DPR = 1, N = 0, particles = [], targets = [], pointer = {x:-9e9,y:-9e9,down:false}, quiet = 0;
+
+  const rand = (a,b) => a + Math.random() * (b-a);
+  const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+  function resize(){
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    off.width = W; off.height = H;
+    N = Math.min(1900, Math.max(650, Math.floor(W * H / 620)));
+    while(particles.length < N) particles.push(makeParticle());
+    particles.length = N;
+    buildTargets(input.value || ' ');
+  }
+
+  function makeParticle(){
+    const a = rand(0,TAU), r = Math.max(W,H) * rand(.05,.55);
+    return {x:W/2+Math.cos(a)*r,y:H/2+Math.sin(a)*r,vx:rand(-2,2),vy:rand(-2,2),s:rand(.7,2.2),spin:rand(-1,1),seed:rand(0,99)};
+  }
+
+  function buildTargets(text){
+    const s = (text || ' ').trim() || ' ';
+    ox.clearRect(0,0,W,H);
+    let size = Math.min(H*.36, W*.35, 260);
+    ox.textAlign = 'center'; ox.textBaseline = 'middle'; ox.fillStyle = '#fff';
+    do { ox.font = `900 ${size}px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif`; size *= .94; }
+    while(ox.measureText(s).width > W*.88 && size > 20);
+    ox.fillText(s, W/2, H/2 - H*.045);
+    const gap = Math.max(4, Math.floor(size / 18));
+    const img = ox.getImageData(0,0,W,H).data, pts = [];
+    for(let y=0; y<H; y+=gap) for(let x=0; x<W; x+=gap){
+      if(img[((y*W+x)<<2)+3] > 60) pts.push({x:x+rand(-1.5,1.5), y:y+rand(-1.5,1.5)});
+    }
+    targets = shuffle(pts.length ? pts : [{x:W/2,y:H/2}]);
+  }
+
+  function burst(x,y,power=1){
+    for(const p of particles){
+      const dx = p.x-x, dy = p.y-y, d = Math.hypot(dx,dy) || 1;
+      const f = Math.max(0, 1 - d / 360) * 22 * power;
+      p.vx += dx / d * f; p.vy += dy / d * f;
+    }
+  }
+
+  function frame(t){
+    requestAnimationFrame(frame);
+    quiet += (pointer.down ? 1 : 0 - quiet) * .035;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = `rgba(3,4,10,${pointer.down ? .11 : .19})`;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation = 'lighter';
+
+    for(let i=0; i<particles.length; i++){
+      const p = particles[i], g = targets[i % targets.length];
+      let dx = g.x - p.x, dy = g.y - p.y;
+      p.vx += dx * .017; p.vy += dy * .017;
+      const mx = p.x - pointer.x, my = p.y - pointer.y, m2 = mx*mx + my*my;
+      if(m2 < 120000){
+        const pull = (pointer.down ? -3800 : 1450) / (m2 + 1400);
+        p.vx += mx * pull - my * .0007;
+        p.vy += my * pull + mx * .0007;
+      }
+      const wave = Math.sin(t*.0015 + p.seed + p.x*.007) * .035;
+      p.vx += Math.cos(p.seed+t*.0007) * wave;
+      p.vy += Math.sin(p.seed+t*.0009) * wave;
+      p.vx *= .885; p.vy *= .885;
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < -80 || p.x > W+80 || p.y < -80 || p.y > H+80){ p.x = rand(0,W); p.y = rand(0,H); p.vx = p.vy = 0; }
+      const speed = Math.min(1, Math.hypot(p.vx,p.vy)/18), hue = (205 + i*.11 + speed*130 + t*.012) % 360;
+      ctx.fillStyle = `hsla(${hue},92%,${62+speed*20}%,${.45+speed*.48})`;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.s + speed*1.9,0,TAU); ctx.fill();
+    }
+
+    if(pointer.down){
+      const r = 18 + Math.sin(t*.01)*4;
+      const grad = ctx.createRadialGradient(pointer.x,pointer.y,1,pointer.x,pointer.y,90);
+      grad.addColorStop(0,'rgba(255,255,255,.95)'); grad.addColorStop(.18,'rgba(130,180,255,.45)'); grad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(pointer.x,pointer.y,90,0,TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(pointer.x,pointer.y,r,0,TAU); ctx.stroke();
+    }
+    ui.classList.toggle('hide', Math.hypot(pointer.x-W/2,pointer.y-H/2) < 250 && !document.activeElement.matches('input'));
+  }
+
+  input.addEventListener('input', e => buildTargets(e.target.value));
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter') { input.value = presets[(Math.random()*presets.length)|0]; buildTargets(input.value); input.blur(); burst(W/2,H/2,.7); }
+  });
+  addEventListener('keydown', e => { if(e.key === ' ' && document.activeElement !== input){ e.preventDefault(); burst(pointer.x>-1e8?pointer.x:W/2,pointer.y>-1e8?pointer.y:H/2,.75); } });
+  addEventListener('pointermove', e => { pointer.x=e.clientX; pointer.y=e.clientY; });
+  addEventListener('pointerdown', e => { pointer.down=true; pointer.x=e.clientX; pointer.y=e.clientY; canvas.setPointerCapture?.(e.pointerId); });
+  addEventListener('pointerup', e => { pointer.down=false; burst(e.clientX,e.clientY,1); });
+  addEventListener('pointerleave', () => { pointer.x = pointer.y = -9e9; pointer.down = false; });
+  addEventListener('resize', resize);
+  resize(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

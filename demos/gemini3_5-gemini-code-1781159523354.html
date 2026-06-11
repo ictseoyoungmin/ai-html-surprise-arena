@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Evolution & Performance</title>
+    <style>
+        :root { --bg: #0b0d19; --txt: #e2e8f0; }
+        body { margin: 0; background: var(--bg); color: var(--txt); font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; perspective: 1000px; }
+        h1 { margin-bottom: 2rem; font-weight: 300; letter-spacing: -1px; background: linear-gradient(45deg, #a855f7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* 3D 차트 컨테이너 */
+        .chart-container { display: flex; gap: 2.5rem; transform-style: preserve-3d; transform: rotateX(20deg) rotateY(-15deg); transition: transform 0.1s ease-out; }
+        
+        /* 3D 막대 스타일 */
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1rem; transform-style: preserve-3d; }
+        .bar { width: 60px; height: calc(var(--val) * 3px); background: rgba(59, 130, 246, 0.2); position: relative; transform-style: preserve-3d; transition: height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        /* 3D 면 구현 */
+        .bar::before, .bar::after { content: ''; position: absolute; left: 0; right: 0; }
+        .bar::before { top: 0; bottom: 0; transform: rotateY(90deg); transform-origin: right; background: linear-gradient(to top, #2563eb, #a855f7); width: 40px; }
+        .bar::after { top: 0; height: 40px; transform: rotateX(90deg); transform-origin: top; background: #c084fc; width: 100%; }
+        
+        /* 텍스트 및 정보 레이블 */
+        .label { font-size: 0.85rem; font-weight: bold; opacity: 0.8; text-transform: uppercase; }
+        .val-text { font-size: 1.2rem; font-weight: 800; color: #a855f7; text-shadow: 0 0 10px rgba(168,85,247,0.5); }
+        .hint { margin-top: 3rem; font-size: 0.8rem; opacity: 0.4; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Gemini Version Performance (Subjective x Quantitative)</h1>
+
+    <div class="chart-container" id="chart">
+        <div class="bar-wrapper">
+            <span class="val-text">45</span>
+            <div class="bar" style="--val: 45;"></div>
+            <span class="label">v1.0 Pro</span>
+        </div>
+        <div class="bar-wrapper">
+            <span class="val-text">78</span>
+            <div class="bar" style="--val: 78;"></div>
+            <span class="label">v1.5 Pro</span>
+        </div>
+        <div class="bar-wrapper">
+            <span class="val-text">88</span>
+            <div class="bar" style="--val: 88;"></div>
+            <span class="label">v2.0 Flash</span>
+        </div>
+        <div class="bar-wrapper">
+            <span class="val-text">96</span>
+            <div class="bar" style="--val: 96;"></div>
+            <span class="label">v2.5 Pro</span>
+        </div>
+    </div>
+
+    <div class="hint">마우스를 움직여 3D 그래프를 회전시켜보세요</div>
+
+    <script>
+        // 마우스 움직임에 반응하는 3D 시각 효과
+        const chart = document.getElementById('chart');
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.clientX) / 20;
+            const y = (window.innerHeight / 2 - e.clientY) / 20;
+            chart.style.transform = `rotateX(${20 - y}deg) rotateY(${-15 - x}deg)`;
+        });
+    </script>
+</body>
+</html>

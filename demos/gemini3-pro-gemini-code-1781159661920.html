@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Infinity Breathing</title>
+<style>
+  body { margin: 0; overflow: hidden; background-color: #050505; cursor: crosshair; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+  const cvs = document.getElementById('c');
+  const ctx = cvs.getContext('2d');
+  let w = cvs.width = window.innerWidth;
+  let h = cvs.height = window.innerHeight;
+  let mx = w / 2, my = h / 2, time = 0;
+
+  // 사용자의 마우스 궤적 추적
+  window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  window.addEventListener('resize', () => { 
+    w = cvs.width = window.innerWidth; 
+    h = cvs.height = window.innerHeight; 
+  });
+
+  function render() {
+    // 잔상 효과(Trail Effect)를 위한 알파 블렌딩
+    ctx.fillStyle = 'rgba(5, 5, 5, 0.08)';
+    ctx.fillRect(0, 0, w, h);
+    
+    time += 0.02;
+    ctx.beginPath();
+    
+    // 수학적 연산을 통한 파동 생성
+    for (let i = 0; i < 200; i++) {
+      const radius = 300 * Math.sin(i * 0.4 + time);
+      const x = mx + radius * Math.cos(i + time);
+      const y = my + radius * Math.sin(i - time);
+      
+      ctx.lineTo(x, y);
+      
+      // 시간에 따라 순환하는 HSL 색상 스펙트럼
+      ctx.strokeStyle = `hsl(${i * 1.5 + time * 50}, 100%, 60%)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+    requestAnimationFrame(render);
+  }
+  
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:'Courier New',monospace}
+canvas{display:block}
+#ui{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:10}
+#title{font-size:clamp(18px,4vw,42px);font-weight:700;color:#fff;letter-spacing:0.15em;opacity:0;transition:opacity 2s}
+#subtitle{font-size:clamp(10px,2vw,16px);color:rgba(255,255,255,0.4);letter-spacing:0.3em;margin-top:12px;opacity:0;transition:opacity 2s 0.5s}
+#ver{position:absolute;bottom:20px;right:24px;font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.2em}
+#hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.15em;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.25}50%{opacity:0.6}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="title">CLAUDE SONNET 4.6</div>
+  <div id="subtitle">CONSCIOUSNESS · CREATIVITY · CODE</div>
+</div>
+<div id="ver">claude-sonnet-4-6</div>
+<div id="hint">CLICK ANYWHERE · DRAG TO ORBIT</div>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let W,H,cx,cy,t=0,mouse={x:0,y:0,down:false,dx:0,dy:0};
+let camRX=0.3,camRY=0,targetRX=0.3,targetRY=0;
+let stars=[],nebula=[],particles=[],ripples=[];
+
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;cx=W/2;cy=H/2}
+resize();window.addEventListener('resize',resize);
+
+function rnd(a,b){return a+Math.random()*(b-a)}
+
+// Stars
+for(let i=0;i<1200;i++){
+  stars.push({x:rnd(-1,1),y:rnd(-1,1),z:rnd(0.1,1),size:rnd(0.3,1.8),twinkle:rnd(0,Math.PI*2),speed:rnd(0.005,0.02)})
+}
+
+// Nebula clouds (flat 2D atmospheric)
+for(let i=0;i<6;i++){
+  nebula.push({
+    x:rnd(-0.6,0.6),y:rnd(-0.4,0.4),
+    r:rnd(0.15,0.35),
+    hue:rnd(180,320),
+    alpha:rnd(0.03,0.09),
+    rotation:rnd(0,Math.PI*2),
+    drift:rnd(-0.0003,0.0003)
+  })
+}
+
+// Floating particles (energy sparks)
+for(let i=0;i<80;i++){
+  particles.push({
+    angle:rnd(0,Math.PI*2),
+    radius:rnd(0.08,0.45),
+    speed:rnd(0.001,0.004)*(Math.random()>0.5?1:-1),
+    y:rnd(-0.3,0.3),
+    vy:rnd(-0.0002,0.0002),
+    size:rnd(1,3),
+    hue:rnd(160,280),
+    phase:rnd(0,Math.PI*2)
+  })
+}
+
+// Project 3D -> 2D with camera rotation
+function project(nx,ny,nz){
+  // Camera rotation
+  let cosX=Math.cos(camRX),sinX=Math.sin(camRX);
+  let cosY=Math.cos(camRY),sinY=Math.sin(camRY);
+  let ry=ny*cosX-nz*sinX;
+  let rz=ny*sinX+nz*cosX;
+  let rx2=nx*cosY+rz*sinY;
+  let rz2=-nx*sinY+rz*cosY;
+  let scale=1/(1+rz2*0.5);
+  return {
+    x:cx+rx2*Math.min(W,H)*0.48*scale,
+    y:cy+ry*Math.min(W,H)*0.48*scale,
+    scale,
+    depth:rz2
+  }
+}
+
+function drawFrame(){
+  ctx.fillStyle='rgba(0,0,2,0.18)';
+  ctx.fillRect(0,0,W,H);
+
+  t+=0.008;
+  camRX+=(targetRX-camRX)*0.04;
+  camRY+=(targetRY-camRY)*0.04;
+
+  // Nebula
+  nebula.forEach(n=>{
+    n.rotation+=n.drift;
+    let p=project(n.x,n.y,0);
+    let r=n.r*Math.min(W,H)*p.scale;
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.rotate(n.rotation);
+    let g=ctx.createRadialGradient(0,0,0,0,0,r);
+    g.addColorStop(0,`hsla(${n.hue},70%,60%,${n.alpha})`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(0,0,r,r*0.6,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+
+  // Stars with twinkling
+  let sorted=[...stars].sort((a,b)=>b.z-a.z);
+  sorted.forEach(s=>{
+    s.twinkle+=s.speed;
+    let brightness=0.6+0.4*Math.sin(s.twinkle);
+    let p=project(s.x*2,s.y*2,s.z-0.5);
+    if(p.depth>-0.9){
+      let sz=s.size*brightness*p.scale*1.5;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,sz,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${brightness*0.9})`;
+      ctx.fill();
+    }
+  });
+
+  // Central orb — the heart
+  let orbP=project(0,0,0);
+  let orbR=Math.min(W,H)*0.055*orbP.scale;
+
+  // Outer glow rings
+  for(let ring=4;ring>0;ring--){
+    let g=ctx.createRadialGradient(orbP.x,orbP.y,0,orbP.x,orbP.y,orbR*ring);
+    let hue=200+Math.sin(t*0.5)*40;
+    g.addColorStop(0,`hsla(${hue},80%,70%,${0.04/ring})`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(orbP.x,orbP.y,orbR*ring,0,Math.PI*2);ctx.fill();
+  }
+
+  // Orb core
+  let coreG=ctx.createRadialGradient(orbP.x-orbR*0.3,orbP.y-orbR*0.3,0,orbP.x,orbP.y,orbR);
+  let h1=200+Math.sin(t)*30,h2=260+Math.cos(t*0.7)*30;
+  coreG.addColorStop(0,`hsl(${h1},90%,85%)`);
+  coreG.addColorStop(0.5,`hsl(${h2},75%,55%)`);
+  coreG.addColorStop(1,`hsl(${h2+30},60%,30%)`);
+  ctx.fillStyle=coreG;
+  ctx.beginPath();ctx.arc(orbP.x,orbP.y,orbR,0,Math.PI*2);ctx.fill();
+
+  // Orbital rings
+  [0.12,0.22,0.36].forEach((rad,ri)=>{
+    let segs=80;
+    for(let i=0;i<segs;i++){
+      let a1=(i/segs)*Math.PI*2+(t*(0.3-ri*0.08));
+      let a2=((i+0.8)/segs)*Math.PI*2+(t*(0.3-ri*0.08));
+      let tilt=[0.5,0.3,0.15][ri];
+      let p1=project(Math.cos(a1)*rad,Math.sin(a1)*rad*tilt,Math.sin(a1)*rad*0.3);
+      let p2=project(Math.cos(a2)*rad,Math.sin(a2)*rad*tilt,Math.sin(a2)*rad*0.3);
+      let alpha=(0.7+0.3*Math.sin(a1*3+t))*(0.4-p1.depth*0.15);
+      let hue=180+ri*40+Math.sin(t+i*0.2)*20;
+      ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);
+      ctx.strokeStyle=`hsla(${hue},85%,65%,${Math.max(0,alpha)})`;
+      ctx.lineWidth=1.5*p1.scale;ctx.stroke();
+    }
+  });
+
+  // Energy particles orbiting
+  particles.forEach(p=>{
+    p.angle+=p.speed*(1+Math.sin(t*0.5)*0.3);
+    p.y+=p.vy;
+    if(p.y>0.4)p.vy=-Math.abs(p.vy);
+    if(p.y<-0.4)p.vy=Math.abs(p.vy);
+    p.phase+=0.05;
+    let px=Math.cos(p.angle)*p.radius;
+    let pz=Math.sin(p.angle)*p.radius*0.5;
+    let proj=project(px,p.y,pz);
+    let alpha=(0.4+0.6*Math.sin(p.phase))*Math.max(0,0.8-proj.depth*0.5);
+    let sz=p.size*proj.scale;
+    ctx.beginPath();ctx.arc(proj.x,proj.y,sz,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${p.hue},90%,70%,${alpha})`;
+    ctx.fill();
+  });
+
+  // Ripples from clicks
+  ripples=ripples.filter(r=>{
+    r.r+=4;r.alpha-=0.025;
+    if(r.alpha<=0)return false;
+    ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(150,180,255,${r.alpha})`;
+    ctx.lineWidth=1;ctx.stroke();
+    return true;
+  });
+
+  // Slowly rotate camera
+  targetRY=camRY+0.001;
+
+  requestAnimationFrame(drawFrame);
+}
+
+// Mouse/touch interaction
+canvas.addEventListener('mousedown',e=>{mouse.down=true;mouse.lx=e.clientX;mouse.ly=e.clientY});
+canvas.addEventListener('mouseup',()=>{mouse.down=false});
+canvas.addEventListener('mousemove',e=>{
+  if(mouse.down){
+    targetRY+=(e.clientX-mouse.lx)*0.005;
+    targetRX+=(e.clientY-mouse.ly)*0.003;
+    targetRX=Math.max(-0.6,Math.min(0.6,targetRX));
+    mouse.lx=e.clientX;mouse.ly=e.clientY;
+  }
+});
+canvas.addEventListener('click',e=>{
+  ripples.push({x:e.clientX,y:e.clientY,r:0,alpha:0.7});
+  // Also add a burst of particles momentarily
+  let nx=(e.clientX-cx)/Math.min(W,H);
+  let ny=(e.clientY-cy)/Math.min(W,H);
+  for(let i=0;i<5;i++){
+    particles.push({
+      angle:Math.atan2(ny,nx)+rnd(-0.5,0.5),
+      radius:Math.sqrt(nx*nx+ny*ny)*1.2,
+      speed:rnd(0.003,0.008)*(Math.random()>0.5?1:-1),
+      y:ny,vy:rnd(-0.001,0.001),
+      size:rnd(2,4),hue:rnd(180,300),phase:0
+    });
+    if(particles.length>120)particles.shift();
+  }
+});
+
+// Touch
+canvas.addEventListener('touchstart',e=>{e.preventDefault();let t=e.touches[0];mouse.down=true;mouse.lx=t.clientX;mouse.ly=t.clientY},{passive:false});
+canvas.addEventListener('touchend',()=>mouse.down=false);
+canvas.addEventListener('touchmove',e=>{e.preventDefault();let tc=e.touches[0];if(mouse.down){targetRY+=(tc.clientX-mouse.lx)*0.005;targetRX+=(tc.clientY-mouse.ly)*0.003;targetRX=Math.max(-0.6,Math.min(0.6,targetRX));mouse.lx=tc.clientX;mouse.ly=tc.clientY}},{passive:false});
+
+// Show title
+setTimeout(()=>{
+  document.getElementById('title').style.opacity=1;
+  document.getElementById('subtitle').style.opacity=1;
+},500);
+
+drawFrame();
+</script>
+</body>
+</html>

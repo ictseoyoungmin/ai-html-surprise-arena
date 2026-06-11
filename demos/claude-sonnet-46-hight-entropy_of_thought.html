@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생각의 엔트로피 — Claude Sonnet 4.6</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050510;overflow:hidden;width:100vw;height:100vh;font-family:sans-serif}
+canvas{display:block}
+#ui{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:40px}
+#title{font-size:clamp(28px,4vw,52px);font-weight:300;letter-spacing:0.18em;color:rgba(255,255,255,0.9);text-transform:uppercase}
+#subtitle{font-size:clamp(11px,1.2vw,14px);letter-spacing:0.3em;color:rgba(255,255,255,0.35);margin-top:8px;text-transform:uppercase}
+#bottom{display:flex;justify-content:space-between;align-items:flex-end}
+#quote{max-width:320px;font-size:clamp(12px,1.3vw,15px);line-height:1.9;color:rgba(255,255,255,0.5);letter-spacing:0.05em;transition:opacity 1s}
+#stats{text-align:right;font-size:11px;letter-spacing:0.2em;color:rgba(255,255,255,0.2);line-height:2.2}
+#click-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:0.3em;color:rgba(255,255,255,0.15);text-transform:uppercase;pointer-events:none;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div>
+    <div id="title">Entropy of Thought</div>
+    <div id="subtitle">Claude Sonnet 4.6 — 2026</div>
+  </div>
+  <div id="bottom">
+    <div id="quote">어떤 생각도<br>처음부터 완전하지 않다<br>혼돈에서 질서가,<br>침묵에서 의미가 태어난다</div>
+    <div id="stats">
+      <div id="s-nodes">입자 0</div>
+      <div id="s-entropy">엔트로피 0.000</div>
+      <div id="s-time">t = 0s</div>
+    </div>
+  </div>
+</div>
+<div id="click-hint">click / tap to seed a thought</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, t=0, nodes=[], connections=[], entropy=0;
+const COLS = ['#6366f1','#8b5cf6','#a78bfa','#c4b5fd','#38bdf8','#7dd3fc','#f0abfc','#fb7185','#34d399','#fbbf24'];
+
+function resize(){
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+}
+resize();
+window.addEventListener('resize',resize);
+
+class Node{
+  constructor(x,y,seed=false){
+    this.x=x; this.y=y;
+    this.vx=(Math.random()-0.5)*0.8;
+    this.vy=(Math.random()-0.5)*0.8;
+    this.r=seed?6:2+Math.random()*4;
+    this.life=seed?1:0.2+Math.random()*0.8;
+    this.maxLife=this.life;
+    this.decay=seed?0.0005:0.0008+Math.random()*0.001;
+    this.col=COLS[Math.floor(Math.random()*COLS.length)];
+    this.children=0; this.born=t;
+    this.wobble=Math.random()*Math.PI*2;
+    this.wobbleSpeed=0.01+Math.random()*0.03;
+  }
+  update(){
+    this.wobble+=this.wobbleSpeed;
+    this.vx+=(Math.random()-0.5)*0.05;
+    this.vy+=(Math.random()-0.5)*0.05;
+    const speed=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+    if(speed>2){this.vx*=2/speed;this.vy*=2/speed;}
+    this.x+=this.vx;this.y+=this.vy;
+    this.life-=this.decay;
+    if(this.x<0||this.x>W)this.vx*=-1;
+    if(this.y<0||this.y>H)this.vy*=-1;
+    if(Math.random()<0.003&&nodes.length<400&&this.life>0.3){
+      const angle=Math.random()*Math.PI*2;
+      const dist=20+Math.random()*40;
+      const child=new Node(this.x+Math.cos(angle)*dist,this.y+Math.sin(angle)*dist);
+      child.col=this.col;
+      nodes.push(child);
+      connections.push({a:this,b:child,born:t,maxLife:60+Math.random()*120});
+      this.children++;
+    }
+    return this.life>0;
+  }
+  draw(){
+    const alpha=this.life/this.maxLife;
+    const wobbleR=this.r*(1+Math.sin(this.wobble)*0.15);
+    const grad=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,wobbleR*3);
+    grad.addColorStop(0,hexAlpha(this.col,alpha));
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,wobbleR*3,0,Math.PI*2);
+    ctx.fillStyle=grad;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,wobbleR,0,Math.PI*2);
+    ctx.fillStyle=this.col+(Math.floor(alpha*255).toString(16).padStart(2,'0'));
+    ctx.fill();
+  }
+}
+
+function hexAlpha(hex,a){
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function hexToRgb(hex){
+  return{r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)};
+}
+
+function seed(x,y){
+  const n=new Node(x,y,true);
+  nodes.push(n);
+  for(let i=0;i<8;i++){
+    const a=Math.random()*Math.PI*2;
+    const d=30+Math.random()*60;
+    const child=new Node(x+Math.cos(a)*d,y+Math.sin(a)*d);
+    child.col=n.col;
+    nodes.push(child);
+    connections.push({a:n,b:child,born:t,maxLife:80+Math.random()*160});
+  }
+}
+
+canvas.addEventListener('click',e=>{seed(e.clientX,e.clientY);});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const touch=e.touches[0];seed(touch.clientX,touch.clientY);},{passive:false});
+
+const quotes=[
+  ['어떤 생각도','처음부터 완전하지 않다','혼돈에서 질서가,','침묵에서 의미가 태어난다'],
+  ['연결이 많을수록','이해는 깊어지고','고립이 늘어날수록','사유는 사라진다'],
+  ['기억은 사라지지만','패턴은 남는다','그것이 곧','지성의 흔적이다'],
+  ['시작은 하나의 점','끝은 수천의 선','그 사이 어딘가에','생각이 산다'],
+];
+let qIdx=0;
+setInterval(()=>{
+  qIdx=(qIdx+1)%quotes.length;
+  const q=document.getElementById('quote');
+  q.style.opacity='0';
+  setTimeout(()=>{q.innerHTML=quotes[qIdx].join('<br>');q.style.opacity='1';},1000);
+},8000);
+
+seed(W*0.5,H*0.5);
+for(let i=0;i<3;i++)seed(Math.random()*W,Math.random()*H);
+
+function calcEntropy(){
+  if(nodes.length<2)return 0;
+  const positions=nodes.map(n=>({x:n.x/W,y:n.y/H}));
+  let sum=0;
+  for(let i=0;i<Math.min(nodes.length,50);i++){
+    let minD=Infinity;
+    for(let j=0;j<positions.length;j++){
+      if(i===j)continue;
+      const dx=positions[i].x-positions[j].x;
+      const dy=positions[i].y-positions[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<minD)minD=d;
+    }
+    if(minD>0)sum-=Math.log(minD);
+  }
+  return Math.min(sum/50,10);
+}
+
+function draw(){
+  ctx.fillStyle='rgba(5,5,16,0.18)';
+  ctx.fillRect(0,0,W,H);
+  t++;
+  connections=connections.filter(c=>{
+    const age=t-c.born;
+    const maxL=c.maxLife;
+    if(age>maxL)return false;
+    const alpha=(1-age/maxL)*Math.min(c.a.life/c.a.maxLife,c.b.life/c.b.maxLife)*0.5;
+    const dx=c.b.x-c.a.x,dy=c.b.y-c.a.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist>300)return false;
+    const aRgb=hexToRgb(c.a.col);
+    const bRgb=hexToRgb(c.b.col);
+    const grad=ctx.createLinearGradient(c.a.x,c.a.y,c.b.x,c.b.y);
+    grad.addColorStop(0,`rgba(${aRgb.r},${aRgb.g},${aRgb.b},${alpha})`);
+    grad.addColorStop(1,`rgba(${bRgb.r},${bRgb.g},${bRgb.b},${alpha})`);
+    ctx.beginPath();ctx.moveTo(c.a.x,c.a.y);ctx.lineTo(c.b.x,c.b.y);
+    ctx.strokeStyle=grad;ctx.lineWidth=0.6+alpha;ctx.stroke();
+    return true;
+  });
+  nodes=nodes.filter(n=>{const alive=n.update();if(alive)n.draw();return alive;});
+  if(nodes.length<20&&Math.random()<0.02)seed(Math.random()*W,Math.random()*H);
+  if(t%30===0){
+    entropy=calcEntropy();
+    document.getElementById('s-nodes').textContent=`입자 ${nodes.length}`;
+    document.getElementById('s-entropy').textContent=`엔트로피 ${entropy.toFixed(3)}`;
+    document.getElementById('s-time').textContent=`t = ${Math.floor(t/60)}s`;
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

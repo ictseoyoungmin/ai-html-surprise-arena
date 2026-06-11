@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cursor Gravity</title>
+<style>
+  *{box-sizing:border-box} html,body{margin:0;height:100%;overflow:hidden;background:#03040b;color:white;font-family:ui-sans-serif,system-ui,Segoe UI,Apple SD Gothic Neo,sans-serif}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .ui{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;padding:7vmin;text-align:center}
+  .panel{pointer-events:auto;backdrop-filter:blur(18px);background:linear-gradient(135deg,#ffffff16,#ffffff06);border:1px solid #ffffff24;border-radius:26px;padding:18px 20px;box-shadow:0 30px 90px #0008}
+  input{width:min(760px,82vw);border:0;outline:0;background:transparent;color:white;text-align:center;font:800 clamp(26px,7vw,76px)/1 ui-sans-serif,system-ui;letter-spacing:-.07em;text-transform:uppercase}
+  p{margin:.5rem 0 0;color:#b8c7ff;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="ui">
+  <div class="panel">
+    <input id="word" maxlength="22" value="TOUCH THE VOID" aria-label="particle text">
+    <p>move = bend · hold = storm · type = rebuild</p>
+  </div>
+</div>
+<script>
+const canvas=c, ctx=c.getContext("2d"), off=document.createElement("canvas"), ox=off.getContext("2d",{willReadFrequently:true});
+let W,H,D=1, pts=[], ps=[], mouse={x:0,y:0,on:false,down:false}, text=word.value;
+const rand=(a,b)=>a+Math.random()*(b-a), pick=a=>a[(Math.random()*a.length)|0];
+
+function resize(){
+  D=devicePixelRatio||1; W=innerWidth; H=innerHeight;
+  canvas.width=W*D; canvas.height=H*D; ctx.setTransform(D,0,0,D,0,0);
+  off.width=W; off.height=H; mouse.x=W/2; mouse.y=H/2; build(text);
+}
+function build(t){
+  text=(t.trim()||"TYPE HERE").toUpperCase();
+  ox.clearRect(0,0,W,H);
+  let s=Math.min(170,W/7,H/3);
+  do{ ox.font=`900 ${s--}px ui-sans-serif,system-ui,Segoe UI`; }while(ox.measureText(text).width>W*.86 && s>28);
+  ox.textAlign="center"; ox.textBaseline="middle"; ox.fillStyle="#fff";
+  ox.shadowColor="#fff"; ox.shadowBlur=12; ox.fillText(text,W/2,H*.45);
+  const img=ox.getImageData(0,0,W,H).data, gap=Math.max(4,Math.round(W/190));
+  pts=[];
+  for(let y=0;y<H;y+=gap) for(let x=0;x<W;x+=gap) if(img[(y*W+x)*4+3]>80) pts.push([x,y]);
+  pts.sort(()=>Math.random()-.5);
+  pts=pts.slice(0,1800);
+  while(ps.length<pts.length) ps.push({x:rand(0,W),y:rand(0,H),vx:0,vy:0,h:rand(185,305)});
+  ps.length=pts.length; ps.forEach((p,i)=>{p.tx=pts[i][0];p.ty=pts[i][1];p.h+=rand(-20,20)});
+}
+function tick(){
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle="rgba(2,4,13,.21)"; ctx.fillRect(0,0,W,H);
+  const g=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,Math.max(W,H)*.55);
+  g.addColorStop(0,"rgba(100,160,255,.15)"); g.addColorStop(.25,"rgba(200,80,255,.08)"); g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.globalCompositeOperation="lighter";
+  for(const p of ps){
+    p.vx+=(p.tx-p.x)*.014; p.vy+=(p.ty-p.y)*.014;
+    if(mouse.on){
+      const dx=p.x-mouse.x, dy=p.y-mouse.y, r2=dx*dx+dy*dy, r=Math.sqrt(r2)+.001;
+      if(r2<52000){
+        const f=(mouse.down?9000:3300)/(r2+900);
+        p.vx+=dx*f - dy/r*(mouse.down?1.2:.45);
+        p.vy+=dy*f + dx/r*(mouse.down?1.2:.45);
+      }
+    }
+    p.vx*=.88; p.vy*=.88; p.x+=p.vx; p.y+=p.vy;
+    const sp=Math.hypot(p.vx,p.vy), z=Math.min(3.2,.75+sp*.16);
+    ctx.fillStyle=`hsla(${p.h+sp*18},95%,70%,${Math.min(.95,.42+sp*.05)})`;
+    ctx.fillRect(p.x,p.y,z,z);
+  }
+  if(mouse.on){
+    ctx.globalCompositeOperation="screen"; ctx.beginPath();
+    ctx.strokeStyle=mouse.down?"#fff":"#8db7ff"; ctx.lineWidth=mouse.down?2.4:1;
+    ctx.arc(mouse.x,mouse.y,mouse.down?42:24,0,7); ctx.stroke();
+  }
+  requestAnimationFrame(tick);
+}
+addEventListener("resize",resize);
+addEventListener("pointermove",e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.on=true});
+addEventListener("pointerdown",()=>mouse.down=true);
+addEventListener("pointerup",()=>mouse.down=false);
+addEventListener("pointerleave",()=>mouse.on=false);
+word.addEventListener("input",e=>build(e.target.value));
+resize(); tick();
+</script>
+</body>
+</html>
