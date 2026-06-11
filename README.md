@@ -1,5 +1,17 @@
 # AI HTML Surprise Arena 2026
 
+<p align="center">
+  <a href="https://ictseoyoungmin.github.io/ai-html-surprise-arena/">
+    <img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-live-blue">
+  </a>
+  <img alt="Static HTML" src="https://img.shields.io/badge/static-HTML%2FCSS%2FJS-orange">
+  <img alt="Unofficial experiment" src="https://img.shields.io/badge/experiment-unofficial-lightgrey">
+</p>
+
+<p align="center">
+  <a href="https://ictseoyoungmin.github.io/ai-html-surprise-arena/">Live Demo</a>
+</p>
+
 같은 프롬프트를 여러 AI 모델에 던지고, 각 모델이 만든 단일 HTML 웹페이지를 모아 비교하는 작은 벤치마크입니다.
 
 공통 프롬프트:
