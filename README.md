@@ -28,6 +28,14 @@ python3 -m http.server 8765
 http://127.0.0.1:8765/index.html
 ```
 
+## 공개 고지
+
+이 저장소는 비공식 실험이며 OpenAI, Anthropic, Google, xAI, Microsoft 등 언급된 각 회사와 무관합니다. 모델명과 브랜드명은 생성 결과를 비교하고 기록하기 위한 식별 목적으로만 사용했습니다.
+
+각 모델의 웹페이지 생성 결과는 사용자, 시점, 프롬프트 세부 표현에 따라 달라질 수 있으며, 이 평가는 공신력 있는 공식 평가가 아닙니다.
+
+페이지는 Tailwind CDN, Font Awesome CDN, Google Fonts를 사용합니다. 따라서 페이지 방문 시 브라우저가 해당 외부 CDN과 Google Fonts 도메인에 리소스를 요청할 수 있습니다.
+
 ## 구성
 
 - [`index.html`](index.html): 데모 갤러리, 필터, 미리보기, 풀스크린 실행 UI
