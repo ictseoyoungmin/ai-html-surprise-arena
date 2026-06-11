@@ -54,6 +54,7 @@ http://127.0.0.1:8765/index.html
 - [`demos/`](demos): 모델들이 생성한 단일 HTML 데모
 - [`data/demos.json`](data/demos.json): 순위, 점수, 요약, 파일 경로를 담은 구조화 데이터
 - [`demos-evaluation.md`](demos-evaluation.md): 평가 기준과 개별 평가 기록
+- [`web-experience-craft/SKILL.md`](web-experience-craft/SKILL.md): 이 프로젝트에서 얻은 인사이트를 바탕으로 정리한 범용 웹페이지 제작용 Codex skill 초안
 
 ## 평가 기준
 
