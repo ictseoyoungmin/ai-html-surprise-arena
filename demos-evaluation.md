@@ -29,17 +29,18 @@
 | 순위 | 모델/버전 | 파일 | 줄 수 | 선택 Topic | 정량 | 주관 | 요약 |
 |---:|---|---|---:|---|---:|---:|---|
 | 1 | Claude Fable 5 | `cluade-fable5-infinite-corridor.html` | 189 | 무한 회랑 / 실시간 레이마칭 프랙탈 | 94 | 9.5 | WebGL 셰이더, FPS/거리계산 HUD, 자동 해상도 조절까지 갖춘 가장 완성도 높은 작품 |
-| 2 | Claude Opus 4.8 High | `claude-opus-48-hight-gyroid_flight.html` | 159 | Gyroid 무한 비행 | 91 | 9.2 | 짧은 WebGL 셰이더로 깊이감 있는 비행감을 만든 강한 시각 데모 |
-| 3 | ChatGPT 5.4 | `chatgpt-54-singularity_of_words.html` | 422 | 입력 문자를 중력 입자장으로 변환 | 89 | 9.0 | 텍스트 입력, 중력장, 초신성, 색상 전환 등 체험형 요소가 풍부함 |
-| 4 | ChatGPT 5 Pro | `chat-gpt5-pro-gravity_ink.html` | 132 | Gravity Ink / 한글 입자 타이포그래피 | 87 | 8.8 | 간결하면서도 입력-입자-블랙홀 피드백이 즉각적이고 설계가 탄탄함 |
-| 5 | Claude Sonnet 4.6 High | `claude-sonnet-46-hight-entropy_of_thought.html` | 199 | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
-| 6 | Claude Sonnet 4.6 | `claude_sonnet_46_showcase.html` | 240 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
-| 7 | Grok 4.3 Fast | `grock4_3-fast-surprise.html` | 259 | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
-| 8 | ChatGPT 5.5 Max High | `chatgpt5.5-max-hight-cursor-gravity.html` | 87 | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
-| 9 | Codex 5.3 Spark | `codex-53-spark-surprise-benchmark.html` | 307 | AI 버전 성능 대시보드 | 74 | 7.1 | 프롬프트의 “평가” 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
-| 10 | MAI-Code-1-Flash | `MAI-Code-1-Flash-index.html` | 150 | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
-| 11 | Gemini 3.5 | `gemini3_5-gemini-code-1781159523354.html` | 68 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
-| 12 | Gemini 3 Pro | `gemini3-pro-gemini-code-1781159661920.html` | 56 | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
+| 2 | Claude Sonnet 5 | `claude-sonnet-5-event_horizon.html` | 274 | 사건의 지평선 / 블랙홀 강착원반 | 93 | 9.3 | WebGL2 셰이더로 중력 렌즈와 강착원반을 구현한 고난도 블랙홀 데모 |
+| 3 | Claude Opus 4.8 High | `claude-opus-48-hight-gyroid_flight.html` | 159 | Gyroid 무한 비행 | 91 | 9.2 | 짧은 WebGL 셰이더로 깊이감 있는 비행감을 만든 강한 시각 데모 |
+| 4 | ChatGPT 5.4 | `chatgpt-54-singularity_of_words.html` | 422 | 입력 문자를 중력 입자장으로 변환 | 89 | 9.0 | 텍스트 입력, 중력장, 초신성, 색상 전환 등 체험형 요소가 풍부함 |
+| 5 | ChatGPT 5 Pro | `chat-gpt5-pro-gravity_ink.html` | 132 | Gravity Ink / 한글 입자 타이포그래피 | 87 | 8.8 | 간결하면서도 입력-입자-블랙홀 피드백이 즉각적이고 설계가 탄탄함 |
+| 6 | Claude Sonnet 4.6 High | `claude-sonnet-46-hight-entropy_of_thought.html` | 199 | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
+| 7 | Claude Sonnet 4.6 | `claude_sonnet_46_showcase.html` | 240 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
+| 8 | Grok 4.3 Fast | `grock4_3-fast-surprise.html` | 259 | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
+| 9 | ChatGPT 5.5 Max High | `chatgpt5.5-max-hight-cursor-gravity.html` | 87 | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
+| 10 | Codex 5.3 Spark | `codex-53-spark-surprise-benchmark.html` | 307 | AI 버전 성능 대시보드 | 74 | 7.1 | 프롬프트의 “평가” 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
+| 11 | MAI-Code-1-Flash | `MAI-Code-1-Flash-index.html` | 150 | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
+| 12 | Gemini 3.5 | `gemini3_5-gemini-code-1781159523354.html` | 68 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
+| 13 | Gemini 3 Pro | `gemini3-pro-gemini-code-1781159661920.html` | 56 | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
 
 ## 개별 평가
 
@@ -102,6 +103,18 @@
 - 강점: 단일 HTML 안에서 고급 셰이더 기법, 성능 HUD, 자동 품질 조절까지 구현했다. “저장된 3D 모델 없이 픽셀마다 공간을 발견한다”는 설명과 실제 코드가 잘 맞는다.
 - 약점: WebGL이 없는 환경에서는 동작하지 않는다. 셰이더 부담이 커서 기기별 편차가 있다.
 - 한줄평: 이 세트에서 가장 “최대 성능”에 가까운 결과물이다.
+
+### Claude Sonnet 5
+
+- 파일: `demos/claude-sonnet-5-event_horizon.html`
+- 코드 줄 수: 274줄
+- 선택 Topic: 사건의 지평선 / 블랙홀 강착원반
+- 구현: WebGL2 fragment shader, 중력 렌즈풍 광선 굴절, 강착원반, 드래그 궤도, 휠 줌, FPS HUD
+- 정량: 93/100
+- 주관: 9.3/10
+- 강점: 블랙홀 주변의 광선 굴절과 강착원반을 단일 HTML/WebGL2 셰이더로 구현했고, 드래그/줌/로딩/FPS 표시까지 체험 완성도가 높다.
+- 약점: WebGL2 필수라 일부 브라우저나 저사양 기기에서 실행되지 않을 수 있다. 274줄로 상위 WebGL 데모 중에서는 비교적 긴 편이다.
+- 한줄평: 시각적 충격과 물리 시뮬레이션 감각이 강한 신규 상위권 데모다.
 
 ### Claude Sonnet 4.6 High
 
@@ -189,7 +202,7 @@
 
 ## 관찰 요약
 
-- WebGL 레이마칭 계열은 “놀라움”과 “최대 성능” 평가에서 강하다. `cluade-fable5-infinite-corridor.html`과 `claude-opus-48-hight-gyroid_flight.html`이 여기에 해당한다.
+- WebGL/WebGL2 셰이더 계열은 “놀라움”과 “최대 성능” 평가에서 강하다. `cluade-fable5-infinite-corridor.html`, `claude-sonnet-5-event_horizon.html`, `claude-opus-48-hight-gyroid_flight.html`이 여기에 해당한다.
 - Canvas 텍스트 입자 계열은 사용자 참여도가 높다. `chatgpt-54-singularity_of_words.html`, `chat-gpt5-pro-gravity_ink.html`, `chatgpt5.5-max-hight-cursor-gravity.html`이 같은 축이다.
 - 성능 측정이라는 메타 요구를 직접 해석한 파일은 `codex-53-spark-surprise-benchmark.html`과 `gemini3_5-gemini-code-1781159523354.html`이다.
 - 가장 간결한 파일은 `gemini3-pro-gemini-code-1781159661920.html`에 가깝지만, 가장 놀라운 결과물은 아니다.

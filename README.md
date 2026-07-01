@@ -24,7 +24,7 @@
 
 대부분의 코딩 벤치마크는 기능 구현, 알고리즘, 버그 수정처럼 명확한 목표를 둡니다. 반대로 이 실험은 목표를 일부러 열어 두었습니다. 모델이 스스로 주제를 고르고, 시각적 임팩트와 상호작용을 설계하고, 단일 HTML이라는 제약 안에서 어디까지 압축해서 구현하는지 보기 위해서입니다.
 
-평가는 Codex/GPT-5.5에게 맡겼습니다. 브라우저 실측 FPS나 대규모 사용자 테스트가 아니라, 각 HTML 소스에서 확인 가능한 구현 방식, 상호작용, 시각 구성, 성능 리스크를 바탕으로 한 1차 평가입니다. 상세 평가는 [`demos-evaluation.md`](demos-evaluation.md), 구조화 데이터는 [`data/demos.json`](data/demos.json)에 정리되어 있습니다.
+평가는 `condex-medium(GPT-5.5)`에게 맡겼습니다. 브라우저 실측 FPS나 대규모 사용자 테스트가 아니라, 각 HTML 소스에서 확인 가능한 구현 방식, 상호작용, 시각 구성, 성능 리스크를 바탕으로 한 1차 평가입니다. 상세 평가는 [`demos-evaluation.md`](demos-evaluation.md), 구조화 데이터는 [`data/demos.json`](data/demos.json)에 정리되어 있습니다.
 
 ## 실행
 
@@ -46,7 +46,7 @@ http://127.0.0.1:8765/index.html
 
 각 모델의 웹페이지 생성 결과는 사용자, 시점, 프롬프트 세부 표현에 따라 달라질 수 있으며, 이 평가는 공신력 있는 공식 평가가 아닙니다.
 
-페이지는 Tailwind CDN, Font Awesome CDN, Google Fonts를 사용합니다. 따라서 페이지 방문 시 브라우저가 해당 외부 CDN과 Google Fonts 도메인에 리소스를 요청할 수 있습니다.
+메인 인덱스 페이지는 빌드 도구 없이 동작하는 정적 HTML/CSS/JS입니다. 일부 개별 데모는 Tailwind CDN, Font Awesome CDN, Google Fonts 같은 외부 리소스를 사용할 수 있습니다.
 
 ## 구성
 
@@ -70,6 +70,26 @@ http://127.0.0.1:8765/index.html
 
 주관 점수는 10점 만점으로 별도 기록했습니다.
 
+## 날짜별 평가 요약
+
+평가자: `condex-medium(GPT-5.5)`
+
+| 날짜 | 순위 | 모델/버전 | 페이지 Topic | 점수 | 주관 | 줄 수 | 스택/테크닉 | 설명 |
+|---|---:|---|---|---:|---:|---:|---|---|
+| 2026-06-11 | 1 | Claude Fable 5 | 무한 회랑 / 실시간 레이마칭 프랙탈 | 94 | 9.5 | 189 | WebGL, Raymarching, Fractal, Adaptive DPR | WebGL 셰이더, FPS/거리계산 HUD, 자동 해상도 조절까지 갖춘 가장 완성도 높은 작품 |
+| 2026-07-01 | 2 | Claude Sonnet 5 | 사건의 지평선 / 블랙홀 강착원반 | 93 | 9.3 | 274 | WebGL2, Black Hole, Accretion Disk, Orbit Camera | WebGL2 셰이더로 중력 렌즈와 강착원반을 구현한 고난도 블랙홀 데모 |
+| 2026-06-11 | 3 | Claude Opus 4.8 High | Gyroid 무한 비행 | 91 | 9.2 | 159 | WebGL, SDF, Raymarching, Pointer Camera | 짧은 WebGL 셰이더로 깊이감 있는 비행감을 만든 강한 시각 데모 |
+| 2026-06-11 | 4 | ChatGPT 5.4 | 입력 문자를 중력 입자장으로 변환 | 89 | 9.0 | 422 | Canvas 2D, Text Raster, Particles, Keyboard | 텍스트 입력, 중력장, 초신성, 색상 전환 등 체험형 요소가 풍부함 |
+| 2026-06-11 | 5 | ChatGPT 5 Pro | Gravity Ink / 한글 입자 타이포그래피 | 87 | 8.8 | 132 | Canvas 2D, Text Particles, Pointer Gravity, Korean Text | 간결하면서도 입력-입자-블랙홀 피드백이 즉각적이고 설계가 탄탄함 |
+| 2026-06-11 | 6 | Claude Sonnet 4.6 High | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 199 | Canvas 2D, Graph, Entropy HUD, Touch | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
+| 2026-06-11 | 7 | Claude Sonnet 4.6 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 240 | Canvas 2D, Orbital Particles, Nebula, Touch | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
+| 2026-06-11 | 8 | Grok 4.3 Fast | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 259 | Canvas 2D, Particles, Mouse Physics, CDN | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
+| 2026-06-11 | 9 | ChatGPT 5.5 Max High | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 87 | Canvas 2D, Text Particles, Cursor Field | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
+| 2026-06-11 | 10 | Codex 5.3 Spark | AI 버전 성능 대시보드 | 74 | 7.1 | 307 | Dashboard, Canvas Chart, Scoring, Particles | 프롬프트의 평가 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
+| 2026-06-11 | 11 | MAI-Code-1-Flash | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 150 | CSS, Pointer Trail, Click Toggle | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
+| 2026-06-11 | 12 | Gemini 3.5 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 68 | CSS 3D, Bar Chart, Mouse Rotate | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
+| 2026-06-11 | 13 | Gemini 3 Pro | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 56 | Canvas 2D, HSL Wave, Mouse | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
+
 ## 관찰과 감상
 
 가장 먼저 눈에 띈 점은, “자유 주제”를 줬을 때 생각보다 많은 모델이 우주, 중력, 입자, 무한 공간 같은 이미지를 떠올렸다는 점입니다. 놀라움을 시각적으로 빠르게 전달하기 좋은 소재이기도 하고, Canvas/WebGL과 잘 맞는 주제이기도 합니다. 동시에 여러 모델이 비슷한 상상력의 방향으로 수렴한다는 점도 흥미로웠습니다.
@@ -83,12 +103,12 @@ Claude 최신 계열의 결과물은 특히 인상적이었습니다. 주제 선
 ## 현재 상위 결과
 
 1. Claude Fable 5 - Infinite Corridor
-2. Claude Opus 4.8 High - GYROID Endless Flight
-3. ChatGPT 5.4 - Singularity of Words
-4. ChatGPT 5 Pro - Gravity Ink
-5. Claude Sonnet 4.6 High - Entropy of Thought
+2. Claude Sonnet 5 - Event Horizon
+3. Claude Opus 4.8 High - GYROID Endless Flight
+4. ChatGPT 5.4 - Singularity of Words
+5. ChatGPT 5 Pro - Gravity Ink
 
-이 순위는 Codex/GPT-5.5가 정리한 1차 평가 결과입니다. 전체 정량 평가와 개별 코멘트는 [`demos-evaluation.md`](demos-evaluation.md)를 참고하세요.
+이 순위는 `condex-medium(GPT-5.5)`가 정리한 1차 평가 결과입니다. 전체 정량 평가와 개별 코멘트는 [`demos-evaluation.md`](demos-evaluation.md)를 참고하세요.
 
 ## 내 감상
 

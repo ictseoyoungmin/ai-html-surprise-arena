@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>사건의 지평선 — Event Horizon</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#000; cursor:grab; }
+  body.dragging { cursor:grabbing; }
+  canvas { display:block; width:100vw; height:100vh; touch-action:none; }
+
+  #ui {
+    position:fixed; left:26px; bottom:22px; z-index:10;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    color: rgba(255,232,214,.62);
+    font-size:11px; letter-spacing:.06em; line-height:1.7;
+    pointer-events:none; user-select:none;
+    text-shadow: 0 0 10px rgba(0,0,0,.9);
+  }
+  #ui .kr { font-size:13px; color:rgba(255,238,220,.85); }
+  #ui .en { opacity:.55; font-size:10px; }
+
+  #meta {
+    position:fixed; right:26px; top:22px; z-index:10;
+    font-family: ui-monospace, monospace; font-size:10px;
+    color: rgba(255,255,255,.35); text-align:right; line-height:1.6;
+    pointer-events:none; user-select:none;
+  }
+
+  #loading {
+    position:fixed; inset:0; background:#000; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; color:rgba(255,180,120,.7);
+    font-size:12px; letter-spacing:.15em;
+    transition:opacity .6s ease;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="ui">
+  <div class="kr">사건의 지평선 · 슈바르츠실트 반경</div>
+  <div class="en">drag to orbit &middot; scroll to zoom &middot; ~170 lines, zero deps</div>
+</div>
+<div id="meta">event_horizon.html<br><span id="fps">-- fps</span></div>
+<div id="loading">RENDERING SPACETIME…</div>
+
+<script>
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { antialias:false, powerPreference:'high-performance' });
+if (!gl) {
+  document.body.innerHTML = '<p style="color:#fff;font-family:sans-serif;padding:2em">WebGL2 is required for this page.</p>';
+  throw new Error('no webgl2');
+}
+
+const vertSrc = `#version 300 es
+in vec2 p;
+void main(){ gl_Position = vec4(p,0.,1.); }
+`;
+
+const fragSrc = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2  res;
+uniform float t;
+uniform vec2  rot;
+uniform float zoom;
+
+const int   STEPS      = 170;
+const float RS         = 1.0;   // event horizon radius
+const float DISK_IN    = 2.6;
+const float DISK_OUT   = 8.2;
+
+float hash13(vec3 p){
+  p = fract(p*0.1031);
+  p += dot(p, p.yzx+33.33);
+  return fract((p.x+p.y)*p.z);
+}
+
+float noise3(vec3 x){
+  vec3 i = floor(x), f = fract(x);
+  f = f*f*(3.0-2.0*f);
+  return mix(
+    mix(mix(hash13(i+vec3(0,0,0)), hash13(i+vec3(1,0,0)), f.x),
+        mix(hash13(i+vec3(0,1,0)), hash13(i+vec3(1,1,0)), f.x), f.y),
+    mix(mix(hash13(i+vec3(0,0,1)), hash13(i+vec3(1,0,1)), f.x),
+        mix(hash13(i+vec3(0,1,1)), hash13(i+vec3(1,1,1)), f.x), f.y),
+    f.z);
+}
+
+float fbm(vec3 p){
+  float s=0.0, a=0.5;
+  for(int i=0;i<5;i++){ s += a*noise3(p); p*=2.03; a*=0.5; }
+  return s;
+}
+
+vec3 stars(vec3 rd){
+  vec3 col = vec3(0.0);
+  float n = hash13(floor(rd*380.0));
+  if(n > 0.9965){
+    float b = smoothstep(0.9965, 1.0, n);
+    float tw = 0.75 + 0.25*sin(t*3.0 + n*80.0);
+    col += b*tw*vec3(0.85,0.9,1.0);
+  }
+  col += 0.018*vec3(0.35,0.15,0.5)*(0.5+0.5*fbm(rd*2.2 + t*0.015));
+  return col;
+}
+
+vec3 renderScene(vec3 ro, vec3 rd){
+  vec3 pos = ro, dir = rd, accum = vec3(0.0), bg = vec3(0.0);
+  bool absorbed = false, escaped = false;
+  float minR = 1e5;
+
+  for(int i=0; i<STEPS; i++){
+    float r = length(pos);
+    minR = min(minR, r);
+    if(r < RS){ absorbed = true; break; }
+    if(r > 55.0){ bg = stars(dir); escaped = true; break; }
+
+    float h = clamp(r*0.12, 0.02, 0.55);
+    vec3 accel = -pos * (2.4 / (r*r*r));
+    vec3 newDir = normalize(dir + accel*h);
+
+    vec3 prevPos = pos;
+    pos += newDir*h;
+    dir  = newDir;
+
+    if(prevPos.y*pos.y < 0.0){
+      float tc  = prevPos.y/(prevPos.y - pos.y);
+      vec3  hit = mix(prevPos, pos, tc);
+      float hr  = length(hit.xz);
+      if(hr > DISK_IN && hr < DISK_OUT){
+        float swirl = t*(0.55/(hr*0.3+0.25));
+        float cs = cos(swirl), sn = sin(swirl);
+        vec3 rp = vec3(hit.x*cs + hit.z*sn, hit.y, -hit.x*sn + hit.z*cs);
+        float density = fbm(rp*0.9 + vec3(0.0,0.0,t*0.06));
+        density *= smoothstep(DISK_IN, DISK_IN+1.0, hr) * (1.0 - smoothstep(DISK_OUT-2.2, DISK_OUT, hr));
+        density = pow(clamp(density,0.0,1.0), 1.6);
+
+        float temp = 1.0 - smoothstep(DISK_IN, DISK_OUT, hr);
+        vec3 hotCol  = vec3(1.0, 0.96, 0.88);
+        vec3 coolCol = vec3(1.0, 0.36, 0.08);
+        vec3 diskCol = mix(coolCol, hotCol, temp);
+
+        accum += diskCol * density * (0.55 + 1.3*temp) * 1.35;
+      }
+    }
+  }
+
+  vec3 col = absorbed ? vec3(0.0) : (escaped ? bg : vec3(0.0));
+  float ring = exp(-pow((minR-1.55)*3.2, 2.0));
+  accum += vec3(1.0,0.82,0.55) * ring * (absorbed ? 0.0 : 0.75);
+
+  return col + accum;
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5*res)/res.y;
+
+  float yaw = rot.x, pitch = clamp(rot.y, -1.5, 1.5);
+  vec3 ro;
+  ro.x = zoom*cos(pitch)*sin(yaw);
+  ro.z = zoom*cos(pitch)*cos(yaw);
+  ro.y = zoom*sin(pitch);
+
+  vec3 fwd   = normalize(-ro);
+  vec3 right = normalize(cross(vec3(0.0,1.0,0.0), fwd));
+  vec3 up    = cross(fwd, right);
+  vec3 rd    = normalize(fwd*1.6 + uv.x*right + uv.y*up);
+
+  vec3 col = renderScene(ro, rd);
+
+  col = col/(col+vec3(1.0));
+  col = pow(col, vec3(0.4545));
+  col *= 1.0 - dot(uv,uv)*0.32;
+
+  O = vec4(col, 1.0);
+}
+`;
+
+function compile(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+    console.error(gl.getShaderInfoLog(s));
+    throw new Error('shader compile failed');
+  }
+  return s;
+}
+
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vertSrc));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){
+  console.error(gl.getProgramInfoLog(prog));
+  throw new Error('program link failed');
+}
+gl.useProgram(prog);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const pLoc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(pLoc);
+gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+
+const uRes  = gl.getUniformLocation(prog, 'res');
+const uT    = gl.getUniformLocation(prog, 't');
+const uRot  = gl.getUniformLocation(prog, 'rot');
+const uZoom = gl.getUniformLocation(prog, 'zoom');
+
+let rot = [0.6, 0.28];
+let zoom = 14.0;
+let dragging = false, lastX = 0, lastY = 0, autoSpin = true;
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.3);
+  canvas.width  = Math.floor(innerWidth * dpr);
+  canvas.height = Math.floor(innerHeight * dpr);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+}
+addEventListener('resize', resize);
+resize();
+
+function down(x,y){ dragging = true; autoSpin = false; lastX = x; lastY = y; document.body.classList.add('dragging'); }
+function move(x,y){
+  if(!dragging) return;
+  rot[0] += (x - lastX) * 0.0045;
+  rot[1] += (y - lastY) * 0.0035;
+  lastX = x; lastY = y;
+}
+function up(){ dragging = false; document.body.classList.remove('dragging'); }
+
+canvas.addEventListener('mousedown', e => down(e.clientX, e.clientY));
+addEventListener('mousemove', e => move(e.clientX, e.clientY));
+addEventListener('mouseup', up);
+canvas.addEventListener('touchstart', e => { const tt=e.touches[0]; down(tt.clientX, tt.clientY); }, {passive:true});
+addEventListener('touchmove', e => { const tt=e.touches[0]; move(tt.clientX, tt.clientY); }, {passive:true});
+addEventListener('touchend', up);
+canvas.addEventListener('wheel', e => {
+  zoom = Math.min(28, Math.max(4.5, zoom + e.deltaY*0.01));
+}, {passive:true});
+
+let frames = 0, fpsAcc = 0, lastFpsT = performance.now();
+const fpsEl = document.getElementById('fps');
+const loadingEl = document.getElementById('loading');
+let start = performance.now();
+let firstFrame = true;
+
+function loop(now){
+  const time = (now - start) / 1000;
+  if(autoSpin) rot[0] += 0.0016;
+
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+  gl.uniform1f(uT, time);
+  gl.uniform2f(uRot, rot[0], rot[1]);
+  gl.uniform1f(uZoom, zoom);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  if(firstFrame){ loadingEl.style.opacity = '0'; setTimeout(()=>loadingEl.remove(), 650); firstFrame = false; }
+
+  frames++; fpsAcc += now - lastFpsT; lastFpsT = now;
+  if(fpsAcc > 500){ fpsEl.textContent = Math.round(frames*1000/fpsAcc) + ' fps'; frames = 0; fpsAcc = 0; }
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

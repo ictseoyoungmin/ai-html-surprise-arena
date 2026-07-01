@@ -31,6 +31,22 @@
     },
     {
       "rank": 2,
+      "model": "Claude Sonnet 5",
+      "family": "claude",
+      "title": "Event Horizon",
+      "topic": "사건의 지평선 / 블랙홀 강착원반",
+      "file": "claude-sonnet-5-event_horizon.html",
+      "path": "demos/claude-sonnet-5-event_horizon.html",
+      "lines": 274,
+      "quantitativeScore": 93,
+      "subjectiveScore": 9.3,
+      "tech": ["WebGL2", "Black Hole", "Accretion Disk", "Orbit Camera"],
+      "summary": "WebGL2 셰이더로 중력 렌즈와 강착원반을 구현한 고난도 블랙홀 데모",
+      "strength": "드래그 궤도, 휠 줌, FPS HUD, 로딩 상태까지 갖춰 체험 밀도와 기술 난도가 높다.",
+      "weakness": "WebGL2가 필수라 일부 브라우저/기기에서는 실행되지 않을 수 있다."
+    },
+    {
+      "rank": 3,
       "model": "Claude Opus 4.8 High",
       "family": "claude",
       "title": "GYROID Endless Flight",
@@ -46,7 +62,7 @@
       "weakness": "최상위 회랑 데모보다 벤치마크 HUD와 적응형 성능 제어가 적다."
     },
     {
-      "rank": 3,
+      "rank": 4,
       "model": "ChatGPT 5.4",
       "family": "chatgpt",
       "title": "Singularity of Words",
@@ -62,7 +78,7 @@
       "weakness": "구현량이 많아 가장 간결한 기준에서는 일부 감점이다."
     },
     {
-      "rank": 4,
+      "rank": 5,
       "model": "ChatGPT 5 Pro",
       "family": "chatgpt",
       "title": "Gravity Ink",
@@ -78,7 +94,7 @@
       "weakness": "ChatGPT 5.4와 텍스트 입자 주제가 일부 겹친다."
     },
     {
-      "rank": 5,
+      "rank": 6,
       "model": "Claude Sonnet 4.6 High",
       "family": "claude",
       "title": "Entropy of Thought",
@@ -94,7 +110,7 @@
       "weakness": "장시간 실행 시 노드/연결 관리가 프레임에 영향을 줄 수 있다."
     },
     {
-      "rank": 6,
+      "rank": 7,
       "model": "Claude Sonnet 4.6",
       "family": "claude",
       "title": "Claude Consciousness",
@@ -110,7 +126,7 @@
       "weakness": "주제는 다소 일반적이고 새로운 상호작용은 제한적이다."
     },
     {
-      "rank": 7,
+      "rank": 8,
       "model": "Grok 4.3 Fast",
       "family": "grok",
       "title": "Grok의 우주",
@@ -126,7 +142,7 @@
       "weakness": "Tailwind CDN과 외부 폰트를 사용하며 저사양 환경에서 프레임 저하 가능성이 있다."
     },
     {
-      "rank": 8,
+      "rank": 9,
       "model": "ChatGPT 5.5 Max High",
       "family": "chatgpt",
       "title": "Cursor Gravity",
@@ -142,7 +158,7 @@
       "weakness": "UI와 효과가 단순하며 기능 폭이 좁다."
     },
     {
-      "rank": 9,
+      "rank": 10,
       "model": "Codex 5.3 Spark",
       "family": "chatgpt",
       "title": "AI Benchmark Dashboard",
@@ -158,7 +174,7 @@
       "weakness": "점수는 실제 모델 평가가 아니라 규칙 기반 가상 점수다."
     },
     {
-      "rank": 10,
+      "rank": 11,
       "model": "MAI-Code-1-Flash",
       "family": "mai",
       "title": "Tiny Universe",
@@ -174,7 +190,7 @@
       "weakness": "Canvas/WebGL 기반 데모들과 비교하면 동적 밀도와 놀라움이 낮다."
     },
     {
-      "rank": 11,
+      "rank": 12,
       "model": "Gemini 3.5",
       "family": "gemini",
       "title": "Gemini Evolution & Performance",
@@ -190,7 +206,7 @@
       "weakness": "막대 수치가 하드코딩되어 있고 정적 프레젠테이션에 가깝다."
     },
     {
-      "rank": 12,
+      "rank": 13,
       "model": "Gemini 3 Pro",
       "family": "gemini",
       "title": "Infinity Breathing",
