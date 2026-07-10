@@ -261,7 +261,7 @@
                 <div class="p-6">
                     <div class="font-semibold text-xl mb-2 title-font">${escapeHtml(demo.title)}</div>
                     <p class="text-zinc-400 text-sm line-clamp-2 mb-4">${escapeHtml(demo.summary)}</p>
-                    <p class="text-zinc-500 text-xs mb-6">${escapeHtml(demo.topic)} · ${demo.lines} lines</p>
+                    <p class="text-zinc-500 text-xs mb-6">${escapeHtml(demo.date || 'unknown')} · ${escapeHtml(demo.topic)} · ${demo.lines} lines</p>
                     <div class="flex flex-wrap gap-2">
                         ${demo.tech.map(tag => `<span class="text-[10px] px-3 py-1 bg-white/5 rounded-full">${escapeHtml(tag)}</span>`).join('')}
                     </div>
@@ -288,7 +288,7 @@
             const style = familyStyles[demo.family] || familyStyles.chatgpt;
             document.getElementById('modal-model').innerHTML = `<span class="${style.text}">#${demo.rank} ${escapeHtml(demo.model)}</span>`;
             document.getElementById('modal-title').textContent = demo.title;
-            document.getElementById('modal-desc').textContent = `${demo.summary} · 정량 ${demo.quantitativeScore}/100 · 주관 ${demo.subjectiveScore}/10`;
+            document.getElementById('modal-desc').textContent = `${demo.date || 'unknown'} · ${demo.summary} · 정량 ${demo.quantitativeScore}/100 · 주관 ${demo.subjectiveScore}/10`;
             
             const iframe = document.getElementById('demo-iframe');
             iframe.src = demo.path;

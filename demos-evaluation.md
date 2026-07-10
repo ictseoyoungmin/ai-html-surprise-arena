@@ -33,14 +33,15 @@
 | 3 | Claude Opus 4.8 High | `claude-opus-48-hight-gyroid_flight.html` | 159 | Gyroid 무한 비행 | 91 | 9.2 | 짧은 WebGL 셰이더로 깊이감 있는 비행감을 만든 강한 시각 데모 |
 | 4 | ChatGPT 5.4 | `chatgpt-54-singularity_of_words.html` | 422 | 입력 문자를 중력 입자장으로 변환 | 89 | 9.0 | 텍스트 입력, 중력장, 초신성, 색상 전환 등 체험형 요소가 풍부함 |
 | 5 | ChatGPT 5 Pro | `chat-gpt5-pro-gravity_ink.html` | 132 | Gravity Ink / 한글 입자 타이포그래피 | 87 | 8.8 | 간결하면서도 입력-입자-블랙홀 피드백이 즉각적이고 설계가 탄탄함 |
-| 6 | Claude Sonnet 4.6 High | `claude-sonnet-46-hight-entropy_of_thought.html` | 199 | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
-| 7 | Claude Sonnet 4.6 | `claude_sonnet_46_showcase.html` | 240 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
-| 8 | Grok 4.3 Fast | `grock4_3-fast-surprise.html` | 259 | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
-| 9 | ChatGPT 5.5 Max High | `chatgpt5.5-max-hight-cursor-gravity.html` | 87 | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
-| 10 | Codex 5.3 Spark | `codex-53-spark-surprise-benchmark.html` | 307 | AI 버전 성능 대시보드 | 74 | 7.1 | 프롬프트의 “평가” 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
-| 11 | MAI-Code-1-Flash | `MAI-Code-1-Flash-index.html` | 150 | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
-| 12 | Gemini 3.5 | `gemini3_5-gemini-code-1781159523354.html` | 68 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
-| 13 | Gemini 3 Pro | `gemini3-pro-gemini-code-1781159661920.html` | 56 | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
+| 6 | ChatGPT 5.6 Sol Light | `chatgpt-56-sol-light-gravity-bloom.html` | 5 | 중력장 입자 꽃 / attraction particle field | 86 | 8.6 | 5줄로 압축한 4,200개 입자 중력장 데모로 간결성과 즉시성이 강함 |
+| 7 | Claude Sonnet 4.6 High | `claude-sonnet-46-hight-entropy_of_thought.html` | 199 | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
+| 8 | Claude Sonnet 4.6 | `claude_sonnet_46_showcase.html` | 240 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
+| 9 | Grok 4.3 Fast | `grock4_3-fast-surprise.html` | 259 | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
+| 10 | ChatGPT 5.5 Max High | `chatgpt5.5-max-hight-cursor-gravity.html` | 87 | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
+| 11 | Codex 5.3 Spark | `codex-53-spark-surprise-benchmark.html` | 307 | AI 버전 성능 대시보드 | 74 | 7.1 | 프롬프트의 “평가” 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
+| 12 | MAI-Code-1-Flash | `MAI-Code-1-Flash-index.html` | 150 | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
+| 13 | Gemini 3.5 | `gemini3_5-gemini-code-1781159523354.html` | 68 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
+| 14 | Gemini 3 Pro | `gemini3-pro-gemini-code-1781159661920.html` | 56 | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
 
 ## 개별 평가
 
@@ -175,6 +176,18 @@
 - 강점: `놀람`이라는 기본 한글 입력이 즉시 주제와 맞고, 입력/드래그/놓기 피드백이 선명하다. 기능 대비 코드가 압축적이다.
 - 약점: ChatGPT 5.4와 거의 같은 계열의 텍스트 입자 주제라 독창성 면에서는 약간 겹친다.
 - 한줄평: 간결성과 체험성을 잘 절충한 결과물이다.
+
+### ChatGPT 5.6 Sol Light
+
+- 파일: `demos/chatgpt-56-sol-light-gravity-bloom.html`
+- 코드 줄 수: 5줄
+- 선택 Topic: Gravity / Bloom, 중력장 입자 꽃
+- 구현: Canvas 2D 4,200개 입자, pointer attraction, drag bend, space/double-click burst, responsive particle count
+- 정량: 86/100
+- 주관: 8.6/10
+- 강점: 극단적으로 압축된 5줄 안에 밀도 높은 입자장, 마우스 중력, 폭발 이벤트, 반응형 입자 수까지 구현했다.
+- 약점: minified 스타일이라 코드 가독성과 유지보수성은 낮다. WebGL 셰이더 계열의 공간 깊이보다는 2D 입자 연출에 집중되어 있다.
+- 한줄평: “간결하면서 놀라움”이라는 조건에 매우 직접적으로 맞는 압축형 Canvas 데모다.
 
 ### ChatGPT 5.5 Max High
 

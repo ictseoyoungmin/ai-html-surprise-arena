@@ -81,14 +81,15 @@ http://127.0.0.1:8765/index.html
 | 2026-06-11 | 3 | Claude Opus 4.8 High | Gyroid 무한 비행 | 91 | 9.2 | 159 | WebGL, SDF, Raymarching, Pointer Camera | 짧은 WebGL 셰이더로 깊이감 있는 비행감을 만든 강한 시각 데모 |
 | 2026-06-11 | 4 | ChatGPT 5.4 | 입력 문자를 중력 입자장으로 변환 | 89 | 9.0 | 422 | Canvas 2D, Text Raster, Particles, Keyboard | 텍스트 입력, 중력장, 초신성, 색상 전환 등 체험형 요소가 풍부함 |
 | 2026-06-11 | 5 | ChatGPT 5 Pro | Gravity Ink / 한글 입자 타이포그래피 | 87 | 8.8 | 132 | Canvas 2D, Text Particles, Pointer Gravity, Korean Text | 간결하면서도 입력-입자-블랙홀 피드백이 즉각적이고 설계가 탄탄함 |
-| 2026-06-11 | 6 | Claude Sonnet 4.6 High | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 199 | Canvas 2D, Graph, Entropy HUD, Touch | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
-| 2026-06-11 | 7 | Claude Sonnet 4.6 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 240 | Canvas 2D, Orbital Particles, Nebula, Touch | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
-| 2026-06-11 | 8 | Grok 4.3 Fast | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 259 | Canvas 2D, Particles, Mouse Physics, CDN | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
-| 2026-06-11 | 9 | ChatGPT 5.5 Max High | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 87 | Canvas 2D, Text Particles, Cursor Field | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
-| 2026-06-11 | 10 | Codex 5.3 Spark | AI 버전 성능 대시보드 | 74 | 7.1 | 307 | Dashboard, Canvas Chart, Scoring, Particles | 프롬프트의 평가 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
-| 2026-06-11 | 11 | MAI-Code-1-Flash | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 150 | CSS, Pointer Trail, Click Toggle | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
-| 2026-06-11 | 12 | Gemini 3.5 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 68 | CSS 3D, Bar Chart, Mouse Rotate | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
-| 2026-06-11 | 13 | Gemini 3 Pro | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 56 | Canvas 2D, HSL Wave, Mouse | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
+| 2026-07-10 | 6 | ChatGPT 5.6 Sol Light | 중력장 입자 꽃 / attraction particle field | 86 | 8.6 | 5 | Canvas 2D, Particles, Pointer Field, Minified | 5줄로 압축한 4,200개 입자 중력장 데모로 간결성과 즉시성이 강함 |
+| 2026-06-11 | 7 | Claude Sonnet 4.6 High | 생각의 엔트로피 / 노드 네트워크 | 84 | 8.4 | 199 | Canvas 2D, Graph, Entropy HUD, Touch | 개념, 통계 HUD, 성장하는 입자 네트워크가 잘 결합됨 |
+| 2026-06-11 | 8 | Claude Sonnet 4.6 | 의식/창의성 우주 오브 쇼케이스 | 80 | 8.0 | 240 | Canvas 2D, Orbital Particles, Nebula, Touch | 2D Canvas만으로 3D스러운 오브와 별, 네뷸라를 안정적으로 구성 |
+| 2026-06-11 | 9 | Grok 4.3 Fast | Grok의 우주 / 파티클 폭발 | 78 | 7.8 | 259 | Canvas 2D, Particles, Mouse Physics, CDN | 5000개 입자 폭발과 브랜드 쇼케이스가 강하지만 CDN 의존과 과장된 카피가 있음 |
+| 2026-06-11 | 10 | ChatGPT 5.5 Max High | Cursor Gravity / 텍스트 입자장 | 77 | 7.7 | 87 | Canvas 2D, Text Particles, Cursor Field | 매우 짧고 반응이 좋지만 GPT 5 Pro/5.4 계열과 주제가 겹치며 기능 폭은 좁음 |
+| 2026-06-11 | 11 | Codex 5.3 Spark | AI 버전 성능 대시보드 | 74 | 7.1 | 307 | Dashboard, Canvas Chart, Scoring, Particles | 프롬프트의 평가 맥락을 직접 반영했지만 놀라움보다는 대시보드 성격이 강함 |
+| 2026-06-11 | 12 | MAI-Code-1-Flash | Tiny Universe / 작은 우주 코어 | 65 | 6.5 | 150 | CSS, Pointer Trail, Click Toggle | 가장 단순하고 깔끔하나 시각/상호작용 규모가 작음 |
+| 2026-06-11 | 13 | Gemini 3.5 | Gemini 버전 성능 3D 막대 차트 | 58 | 5.8 | 68 | CSS 3D, Bar Chart, Mouse Rotate | 프롬프트의 측정 맥락은 반영했지만 데모 자체의 놀라움은 제한적 |
+| 2026-06-11 | 14 | Gemini 3 Pro | Infinity Breathing / 마우스 중심 파동 | 52 | 5.5 | 56 | Canvas 2D, HSL Wave, Mouse | 극도로 간결하고 미니멀하지만 단일 시각 효과에 머무름 |
 
 ## 관찰과 감상
 
